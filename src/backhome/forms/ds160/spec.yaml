@@ -1,7 +1,7 @@
 # DS-160 (Online Nonimmigrant Visa Application) field spec — CEAC GenNIV, observed 2026-09.
 # Element ids are CEAC ids with the prefix `ctl00_SiteContentPlaceHolder_FormView1_` removed.
-# Pages with `ids_verified: false` were not yet opened live: their ids are placeholders (TBD_*) to be
-# replaced from a snapshot the first time an agent reaches the page. Everything else was captured live.
+# Every id below was captured from the live CEAC page (2026-09-27). New pages: snapshot first, then add
+# them here (optionally marked `ids_verified: false` with TBD_* placeholders until captured).
 #
 # Date dropdown formats differ per page (observed): day num|num2, month num|num2|MMM.
 form: ds160
@@ -144,6 +144,14 @@ pages:
              map: {ASK.FM: ASKF, DOUBAN: DUBN, FACEBOOK: FCBK, FLICKR: FLKR, GOOGLE+: GOGL, INSTAGRAM: INST, LINKEDIN: LINK, MYSPACE: MYSP, PINTEREST: PTST, QZONE: QZNE, REDDIT: RDDT, SINA WEIBO: SWBO, TENCENT WEIBO: TWBO, TUMBLR: TUMB, TWITTER: TWIT, TWOO: TWOO, VINE: VINE, VKONTAKTE: VKON, YOUKU: YUKU, YOUTUBE: YTUB, NONE: NONE}}
           - {id: "dtlSocial_ctl{i:02d}_tbxSocialMediaIdent", label: "identifier", from: handle}
       - {id: rblAddSocial, type: yesno, label: "Provide information about presence on other websites/apps?", from: contact.other_websites_ind, group: contact.social}
+      - type: list
+        label: Other website/app
+        from: contact.other_websites
+        when: contact.other_websites_ind
+        group: contact.social
+        item:
+          - {id: "dtlAddSocial_ctl{i:02d}_tbxAddSocialPlat", label: platform, from: platform}
+          - {id: "dtlAddSocial_ctl{i:02d}_tbxAddSocialHand", label: handle, from: handle, keep_case: true}
 
   - node: PptVisa
     title: Passport
@@ -189,60 +197,147 @@ pages:
       - {id: rblUS_IMMED_RELATIVE_IND, type: yesno, label: "Immediate relatives in the U.S. (not parents)?", from: family.us_immediate_relatives_ind, ask: "在美国有没有直系亲属（配偶/未婚夫妻/子女/兄弟姐妹）？有的话给姓名、关系、身份"}
       - {id: rblUS_OTHER_RELATIVE_IND, type: yesno, label: "Any other relatives in the U.S.?", from: family.us_other_relatives_ind, ask: "在美国有没有其他亲戚？"}
 
-  # ── not yet opened live: ids are placeholders (replace from the first snapshot) ──────────
   - node: WorkEducation1
     title: Work / Education — Present
-    ids_verified: false
     fields:
-      - {id: TBD_PRIMARY_OCCUPATION, type: select, label: "Primary Occupation", from: employment.current.ds160_occupation}
-      - {id: TBD_EMP_SCH_NAME, label: "Present Employer Name", from: employment.current.employer, check: ceac_address}
-      - {id: TBD_EMP_SCH_ADDR1, label: "Employer Address Line 1", from: employment.current.address.line1, check: ceac_address}
-      - {id: TBD_EMP_SCH_CITY, label: "Employer City", from: employment.current.address.city}
-      - {id: TBD_EMP_SCH_STATE, label: "Employer State", from: employment.current.address.state}
-      - {id: TBD_EMP_SCH_POSTAL_CD, label: "Employer ZIP", from: employment.current.address.zip, check: us_zip}
-      - {id: TBD_EMP_SCH_TEL, label: "Employer Phone", from: employment.current.phone, check: phone_digits, ask: "雇主电话（DS-160 必填，可用公司总机）"}
-      - {type: date, ids: [TBD_EMP_START_DAY, TBD_EMP_START_MONTH, TBD_EMP_START_YEAR], label: "Start Date", from: employment.current.start}
-      - {id: TBD_CURR_MONTHLY_SALARY, label: "Monthly Income in Local Currency", from: employment.current.monthly_income_usd, ask: "当前月收入（当地货币，税前）"}
-      - {id: TBD_DESCRIBE_DUTIES, label: "Briefly describe your duties", from: employment.current.duties_ds160}
+      - {id: ddlPresentOccupation, type: select, label: "Primary Occupation", from: employment.current.ds160_occupation,
+         map: {AGRICULTURE: A, ARTIST/PERFORMER: AP, BUSINESS: B, COMMUNICATIONS: CM, COMPUTER SCIENCE: CS, CULINARY/FOOD SERVICES: C, EDUCATION: ED, ENGINEERING: EN, GOVERNMENT: G, HOMEMAKER: H, LEGAL PROFESSION: LP, MEDICAL/HEALTH: MH, MILITARY: M, NATURAL SCIENCE: NS, NOT EMPLOYED: N, PHYSICAL SCIENCES: PS, RELIGIOUS VOCATION: RV, RESEARCH: R, RETIRED: RT, SOCIAL SCIENCE: SS, STUDENT: S, OTHER: O}}
+      - {id: tbxEmpSchName, label: "Present Employer or School Name", from: employment.current.employer}
+      - {id: tbxEmpSchAddr1, label: "Employer Street Address (Line 1)", from: employment.current.address.line1, check: ceac_address}
+      - {id: tbxEmpSchCity, label: "Employer City", from: employment.current.address.city}
+      - {id: tbxWORK_EDUC_ADDR_STATE, na: cbxWORK_EDUC_ADDR_STATE_NA, label: "Employer State/Province", from: employment.current.address.state_name}
+      - {id: tbxWORK_EDUC_ADDR_POSTAL_CD, na: cbxWORK_EDUC_ADDR_POSTAL_CD_NA, label: "Employer ZIP", from: employment.current.address.zip, check: us_zip}
+      - {id: tbxWORK_EDUC_TEL, label: "Employer Phone Number", from: employment.current.phone, check: phone_digits, ask: "雇主电话（DS-160 必填，可用公司总机）"}
+      - {id: ddlEmpSchCountry, type: select, map: *country, label: "Employer Country/Region", from: employment.current.address.country}
+      - {type: date, ids: [ddlEmpDateFromDay, ddlEmpDateFromMonth, tbxEmpDateFromYear], day: num, month: num, label: "Start Date", from: employment.current.start, check: past_date}
+      - {id: tbxCURR_MONTHLY_SALARY, na: cbxCURR_MONTHLY_SALARY_NA, label: "Monthly Income in Local Currency", from: employment.current.monthly_income_usd, ask: "当前月收入（当地货币，税前）"}
+      - {id: tbxDescribeDuties, label: "Briefly describe your duties", from: employment.current.duties_ds160}
 
   - node: WorkEducation2
     title: Work / Education — Previous
-    ids_verified: false
     fields:
-      - {id: TBD_PREV_EMPL_IND, type: yesno, label: "Were you previously employed?", from: employment.previous_ind}
-      - {id: TBD_PREV_EMPLOYERS, label: "Previous employers (last 5 years)", from: employment.previous_ds160, ask: "过去 5 年每个雇主（含实习）的地址、电话、职位、起止日期、主管姓名、职责"}
-      - {id: TBD_OTHER_EDUC_IND, type: yesno, label: "Attended any educational institutions at secondary level or above?", from: education.attended_ind}
-      - {id: TBD_SCHOOLS, label: "Schools", from: education.schools}
+      - {id: rblPreviouslyEmployed, type: yesno, label: "Were you previously employed?", from: employment.previous_ind}
+      - type: list
+        label: Previous employer
+        from: employment.previous_ds160
+        when: employment.previous_ind
+        ask: "过去 5 年每个雇主（含实习）的地址、电话、职位、起止日期、主管姓名、职责"
+        item:
+          - {id: "dtlPrevEmpl_ctl{i:02d}_tbEmployerName", label: employer, from: employer}
+          - {id: "dtlPrevEmpl_ctl{i:02d}_tbEmployerStreetAddress1", label: address line 1, from: address.line1, check: ceac_address}
+          - {id: "dtlPrevEmpl_ctl{i:02d}_tbEmployerStreetAddress2", label: address line 2, from: address.line2, required: false}
+          - {id: "dtlPrevEmpl_ctl{i:02d}_tbEmployerCity", label: city, from: address.city}
+          - {id: "dtlPrevEmpl_ctl{i:02d}_tbxPREV_EMPL_ADDR_STATE", na: "dtlPrevEmpl_ctl{i:02d}_cbxPREV_EMPL_ADDR_STATE_NA", label: state, from: address.state_name}
+          - {id: "dtlPrevEmpl_ctl{i:02d}_tbxPREV_EMPL_ADDR_POSTAL_CD", na: "dtlPrevEmpl_ctl{i:02d}_cbxPREV_EMPL_ADDR_POSTAL_CD_NA", label: zip, from: address.zip}
+          - {id: "dtlPrevEmpl_ctl{i:02d}_DropDownList2", type: select, map: *country, label: country, from: address.country}
+          - {id: "dtlPrevEmpl_ctl{i:02d}_tbEmployerPhone", label: phone, from: phone, check: phone_digits}
+          - {id: "dtlPrevEmpl_ctl{i:02d}_tbJobTitle", label: job title, from: title}
+          - {id: "dtlPrevEmpl_ctl{i:02d}_tbSupervisorSurname", na: "dtlPrevEmpl_ctl{i:02d}_cbxSupervisorSurname_NA", label: supervisor surname, from: supervisor.surname, check: ceac_name}
+          - {id: "dtlPrevEmpl_ctl{i:02d}_tbSupervisorGivenName", na: "dtlPrevEmpl_ctl{i:02d}_cbxSupervisorGivenName_NA", label: supervisor given names, from: supervisor.given_names, check: ceac_name}
+          - {type: date, id: "dtlPrevEmpl_ctl{i:02d}_ddlEmpDateFromDay", ids: ["dtlPrevEmpl_ctl{i:02d}_ddlEmpDateFromDay", "dtlPrevEmpl_ctl{i:02d}_ddlEmpDateFromMonth", "dtlPrevEmpl_ctl{i:02d}_tbxEmpDateFromYear"], day: num, month: num, label: from, from: start}
+          - {type: date, id: "dtlPrevEmpl_ctl{i:02d}_ddlEmpDateToDay", ids: ["dtlPrevEmpl_ctl{i:02d}_ddlEmpDateToDay", "dtlPrevEmpl_ctl{i:02d}_ddlEmpDateToMonth", "dtlPrevEmpl_ctl{i:02d}_tbxEmpDateToYear"], day: num, month: num, label: to, from: end}
+          - {id: "dtlPrevEmpl_ctl{i:02d}_tbDescribeDuties", label: duties, from: duties}
+      - {id: rblOtherEduc, type: yesno, label: "Attended any educational institutions at secondary level or above?", from: education.attended_ind}
+      - type: list
+        label: School
+        from: education.ds160_schools
+        when: education.attended_ind
+        item:
+          - {id: "dtlPrevEduc_ctl{i:02d}_tbxSchoolName", label: name, from: name}
+          - {id: "dtlPrevEduc_ctl{i:02d}_tbxSchoolAddr1", label: address line 1, from: address.line1, check: ceac_address}
+          - {id: "dtlPrevEduc_ctl{i:02d}_tbxSchoolCity", label: city, from: address.city}
+          - {id: "dtlPrevEduc_ctl{i:02d}_tbxEDUC_INST_ADDR_STATE", na: "dtlPrevEduc_ctl{i:02d}_cbxEDUC_INST_ADDR_STATE_NA", label: state, from: address.state_name}
+          - {id: "dtlPrevEduc_ctl{i:02d}_tbxEDUC_INST_POSTAL_CD", na: "dtlPrevEduc_ctl{i:02d}_cbxEDUC_INST_POSTAL_CD_NA", label: postal code, from: address.zip}
+          - {id: "dtlPrevEduc_ctl{i:02d}_ddlSchoolCountry", type: select, map: *country, label: country, from: address.country}
+          - {id: "dtlPrevEduc_ctl{i:02d}_tbxSchoolCourseOfStudy", label: course of study, from: course}
+          - {type: date, id: "dtlPrevEduc_ctl{i:02d}_ddlSchoolFromDay", ids: ["dtlPrevEduc_ctl{i:02d}_ddlSchoolFromDay", "dtlPrevEduc_ctl{i:02d}_ddlSchoolFromMonth", "dtlPrevEduc_ctl{i:02d}_tbxSchoolFromYear"], day: num, month: num, label: from, from: start}
+          - {type: date, id: "dtlPrevEduc_ctl{i:02d}_ddlSchoolToDay", ids: ["dtlPrevEduc_ctl{i:02d}_ddlSchoolToDay", "dtlPrevEduc_ctl{i:02d}_ddlSchoolToMonth", "dtlPrevEduc_ctl{i:02d}_tbxSchoolToYear"], day: num, month: num, label: to, from: end}
 
   - node: WorkEducation3
     title: Work / Education — Additional
-    ids_verified: false
     fields:
-      - {id: TBD_CLAN_TRIBE_IND, type: yesno, label: "Belong to a clan or tribe?", from: declarations.clan_or_tribe, group: declarations.background}
-      - {id: TBD_LANGUAGES, label: "Languages you speak", from: contact.languages, ask: "你会说的语言（例：CHINESE, ENGLISH）"}
-      - {id: TBD_COUNTRIES_VISITED_IND, type: yesno, label: "Traveled to any countries in the last five years?", from: travel.countries_visited_5y_ind}
-      - {id: TBD_COUNTRIES_VISITED, label: "Countries visited (last 5 years)", from: travel.countries_visited_5y, ask: "过去 5 年去过的国家/地区（除美国）"}
-      - {id: TBD_ORGANIZATION_IND, type: yesno, label: "Belonged to/worked for any professional, social or charitable organization?", from: declarations.organizations, group: declarations.background}
-      - {id: TBD_SPECIALIZED_SKILLS_IND, type: yesno, label: "Specialized skills (firearms, explosives, nuclear, biological, chemical)?", from: declarations.specialized_skills, group: declarations.background}
-      - {id: TBD_MILITARY_SERVICE_IND, type: yesno, label: "Ever served in the military?", from: declarations.military_service, ask: "是否服过兵役？（大学军训不算）"}
-      - {id: TBD_INSURGENT_ORG_IND, type: yesno, label: "Served in a paramilitary/insurgent organization?", from: declarations.insurgent_org, group: declarations.background}
+      - {id: rblCLAN_TRIBE_IND, type: yesno, label: "Belong to a clan or tribe?", from: declarations.clan_or_tribe, group: declarations.background}
+      - type: list
+        label: Language
+        from: contact.languages
+        ask: "你会说的语言（例：MANDARIN, ENGLISH）"
+        item:
+          - {id: "dtlLANGUAGES_ctl{i:02d}_tbxLANGUAGE_NAME", label: language, from: "."}
+      - {id: rblCOUNTRIES_VISITED_IND, type: yesno, label: "Traveled to any countries/regions in the last five years?", from: travel.countries_visited_5y_ind}
+      - type: list
+        label: Country visited
+        from: travel.countries_visited_5y
+        when: travel.countries_visited_5y_ind
+        ask: "过去 5 年去过的国家/地区（美国除外——美国行程已在 Previous U.S. Travel 页）"
+        item:
+          - {id: "dtlCountriesVisited_ctl{i:02d}_ddlCOUNTRIES_VISITED", type: select, label: country, from: ".",
+             map: {CHINA: CHIN, JAPAN: JPN, HONG KONG SAR: HNK, HONG KONG: HNK, SOUTH KOREA: KOR, CANADA: CAN, UNITED KINGDOM: GRBR, UNITED ARAB EMIRATES: UAE}}
+      - {id: rblORGANIZATION_IND, type: yesno, label: "Belonged to/worked for any professional, social or charitable organization?", from: declarations.organizations, group: declarations.background}
+      - {id: rblSPECIALIZED_SKILLS_IND, type: yesno, label: "Specialized skills (firearms, explosives, nuclear, biological, chemical)?", from: declarations.specialized_skills, group: declarations.background}
+      - {id: rblMILITARY_SERVICE_IND, type: yesno, label: "Ever served in the military?", from: declarations.military_service, ask: "是否服过兵役？（大学军训不算）"}
+      - {id: rblINSURGENT_ORG_IND, type: yesno, label: "Served in a paramilitary/insurgent organization?", from: declarations.insurgent_org, group: declarations.background}
 
-  - node: SecurityandBackground
-    title: Security and Background (parts 1-5)
-    ids_verified: false
+  - node: SecurityandBackground1
+    title: "Security and Background — Part 1"
     fields:
-      - {id: TBD_SEC_DISEASE, type: yesno, label: "Communicable disease / mental disorder / drug abuse (parts 1)", from: declarations.security.health, group: declarations.security, ask: "安全背景问题（传染病、犯罪记录、毒品、恐怖活动、移民欺诈、逾期滞留等约 25 题）——如果全部为“否”，回复“安全问题全部 No”即可"}
-      - {id: TBD_SEC_CRIMINAL, type: yesno, label: "Arrests / convictions / controlled substances / prostitution / money laundering / trafficking (part 2)", from: declarations.security.criminal, group: declarations.security}
-      - {id: TBD_SEC_SECURITY, type: yesno, label: "Espionage / terrorism / genocide / torture / child soldiers etc. (part 3)", from: declarations.security.security, group: declarations.security}
-      - {id: TBD_SEC_IMMIGRATION, type: yesno, label: "Immigration fraud / removal / overstay / unlawful presence (part 4)", from: declarations.security.immigration, group: declarations.security}
-      - {id: TBD_SEC_OTHER, type: yesno, label: "Child custody / voting violation / renounced citizenship for tax (part 5)", from: declarations.security.other, group: declarations.security}
+      - {id: rblDisease, type: yesno, label: "Part 1 (communicable disease, mental disorder, drug abuse): Disease", from: declarations.security.health, group: declarations.security}
+      - {id: rblDisorder, type: yesno, label: "Part 1 (communicable disease, mental disorder, drug abuse): Disorder", from: declarations.security.health, group: declarations.security}
+      - {id: rblDruguser, type: yesno, label: "Part 1 (communicable disease, mental disorder, drug abuse): Druguser", from: declarations.security.health, group: declarations.security}
 
-  - node: TempWork
+  - node: SecurityandBackground2
+    title: "Security and Background — Part 2"
+    fields:
+      - {id: rblArrested, type: yesno, label: "Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): Arrested", from: declarations.security.criminal, group: declarations.security}
+      - {id: rblControlledSubstances, type: yesno, label: "Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): ControlledSubstances", from: declarations.security.criminal, group: declarations.security}
+      - {id: rblProstitution, type: yesno, label: "Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): Prostitution", from: declarations.security.criminal, group: declarations.security}
+      - {id: rblMoneyLaundering, type: yesno, label: "Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): MoneyLaundering", from: declarations.security.criminal, group: declarations.security}
+      - {id: rblHumanTrafficking, type: yesno, label: "Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): HumanTrafficking", from: declarations.security.criminal, group: declarations.security}
+      - {id: rblAssistedSevereTrafficking, type: yesno, label: "Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): AssistedSevereTrafficking", from: declarations.security.criminal, group: declarations.security}
+      - {id: rblHumanTraffickingRelated, type: yesno, label: "Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): HumanTraffickingRelated", from: declarations.security.criminal, group: declarations.security}
+
+  - node: SecurityandBackground3
+    title: "Security and Background — Part 3"
+    fields:
+      - {id: rblIllegalActivity, type: yesno, label: "Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): IllegalActivity", from: declarations.security.security, group: declarations.security}
+      - {id: rblTerroristActivity, type: yesno, label: "Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): TerroristActivity", from: declarations.security.security, group: declarations.security}
+      - {id: rblTerroristSupport, type: yesno, label: "Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): TerroristSupport", from: declarations.security.security, group: declarations.security}
+      - {id: rblTerroristOrg, type: yesno, label: "Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): TerroristOrg", from: declarations.security.security, group: declarations.security}
+      - {id: rblTerroristRel, type: yesno, label: "Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): TerroristRel", from: declarations.security.security, group: declarations.security}
+      - {id: rblGenocide, type: yesno, label: "Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): Genocide", from: declarations.security.security, group: declarations.security}
+      - {id: rblTorture, type: yesno, label: "Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): Torture", from: declarations.security.security, group: declarations.security}
+      - {id: rblExViolence, type: yesno, label: "Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): ExViolence", from: declarations.security.security, group: declarations.security}
+      - {id: rblChildSoldier, type: yesno, label: "Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): ChildSoldier", from: declarations.security.security, group: declarations.security}
+      - {id: rblReligiousFreedom, type: yesno, label: "Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): ReligiousFreedom", from: declarations.security.security, group: declarations.security}
+      - {id: rblPopulationControls, type: yesno, label: "Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): PopulationControls", from: declarations.security.security, group: declarations.security}
+      - {id: rblTransplant, type: yesno, label: "Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): Transplant", from: declarations.security.security, group: declarations.security}
+
+  - node: SecurityandBackground4
+    title: "Security and Background — Part 4"
+    fields:
+      - {id: rblRemovalHearing, type: yesno, label: "Part 4 (immigration: removal, fraud, failure to attend hearing, visa violation/overstay, deportation): RemovalHearing", from: declarations.security.immigration, group: declarations.security}
+      - {id: rblImmigrationFraud, type: yesno, label: "Part 4 (immigration: removal, fraud, failure to attend hearing, visa violation/overstay, deportation): ImmigrationFraud", from: declarations.security.immigration, group: declarations.security}
+      - {id: rblFailToAttend, type: yesno, label: "Part 4 (immigration: removal, fraud, failure to attend hearing, visa violation/overstay, deportation): FailToAttend", from: declarations.security.immigration, group: declarations.security}
+      - {id: rblVisaViolation, type: yesno, label: "Part 4 (immigration: removal, fraud, failure to attend hearing, visa violation/overstay, deportation): VisaViolation", from: declarations.security.immigration, group: declarations.security}
+      - {id: rblDeport, type: yesno, label: "Part 4 (immigration: removal, fraud, failure to attend hearing, visa violation/overstay, deportation): Deport", from: declarations.security.immigration, group: declarations.security}
+
+  - node: SecurityandBackground5
+    title: "Security and Background — Part 5"
+    fields:
+      - {id: rblChildCustody, type: yesno, label: "Part 5 (custody, illegal voting, tax renunciation, J-1 home residency, F-1 public school without reimbursement): ChildCustody", from: declarations.security.other, group: declarations.security}
+      - {id: rblVotingViolation, type: yesno, label: "Part 5 (custody, illegal voting, tax renunciation, J-1 home residency, F-1 public school without reimbursement): VotingViolation", from: declarations.security.other, group: declarations.security}
+      - {id: rblRenounceExp, type: yesno, label: "Part 5 (custody, illegal voting, tax renunciation, J-1 home residency, F-1 public school without reimbursement): RenounceExp", from: declarations.security.other, group: declarations.security}
+      - {id: rblExchangeVisitor, type: yesno, label: "Part 5 (custody, illegal voting, tax renunciation, J-1 home residency, F-1 public school without reimbursement): ExchangeVisitor", from: declarations.security.other, group: declarations.security}
+      - {id: rblAttWoReimb, type: yesno, label: "Part 5 (custody, illegal voting, tax renunciation, J-1 home residency, F-1 public school without reimbursement): AttWoReimb", from: declarations.security.other, group: declarations.security}
+
+  - node: TemporaryWork
     title: Temporary Work Visa (H)
-    ids_verified: false
     fields:
-      - {id: TBD_PETITIONER_NAME, label: "Name of person/company filing petition", from: employment.current.employer}
-      - {id: TBD_PETITIONER_ADDR, label: "Petitioner address", from: employment.current.address.line1}
-      - {id: TBD_PETITIONER_TEL, label: "Petitioner phone", from: employment.current.phone, check: phone_digits}
-      - {id: TBD_WORK_ADDR, label: "Address where you will work", from: employment.current.worksite_line1, ask: "H-1B 工作地点地址（与 LCA/I-129 一致）"}
-      - {id: TBD_MONTHLY_INCOME, label: "Monthly income (USD)", from: employment.current.monthly_income_usd}
+      - {id: tbxPetitionNumber, label: "Application Receipt/Petition Number", from: app.petition_receipt, check: uscis_receipt}
+      - {id: tbxNameOfPetitioner, label: "Name of Person/Company who Filed Petition", from: employment.current.employer}
+      - {id: tbxEmployerName, label: "Name of Employer", from: employment.current.employer}
+      - {id: tbxEmpStreetAddress1, label: "Worksite Street Address (Line 1)", from: employment.current.worksite_line1, check: ceac_address, ask: "H-1B 工作地点地址（与 LCA/I-129 一致）"}
+      - {id: tbxEmpCity, label: "Worksite City", from: employment.current.address.city}
+      - {id: ddlEmpState, type: select, label: "Worksite State", from: employment.current.address.state}
+      - {id: tbxZIPCode, label: "Worksite ZIP", from: employment.current.address.zip, check: us_zip}
+      - {id: tbxTEMP_WORK_TEL, label: "Phone Number", from: employment.current.phone, check: phone_digits}
+      - {id: tbxEmpSalaryInUSD, label: "Monthly income (USD)", from: employment.current.monthly_income_usd}

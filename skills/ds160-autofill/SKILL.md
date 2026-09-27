@@ -23,8 +23,8 @@ OVERVIEW.md, QUESTIONNAIRE.md). Spec: `src/backhome/forms/ds160/spec.yaml`.
 3. Click **Next** with a real mouse click (`find` → `computer.left_click` with the ref).
    If the page re-renders with "Please correct all areas in error", read the errors and fix.
 4. Go back to the page (sidebar) and snapshot it: run `src/backhome/ceac/snapshot.js` as
-   `window.__snap = (<file contents>)(); window.__snap.length`, then read `window.__snap.slice(i, i+1400)`
-   until done (tool output truncates ~1.5k chars). Save verbatim to
+   `window.__snap = (<file contents>)(); window.__snap.length`, then read `window.__snap.slice(i, i+900)`
+   until done (tool output truncates ~1k chars). Save verbatim to
    `data/applications/<APP>/snapshots/<node>.tsv` (node = the `#node=` header).
 5. `uv run backhome recon <APP>` → must print no MISMATCH/MISSING for this page. Fix and repeat if it does.
    Then tell the user the section overview (the row from OVERVIEW.md + anything `needs review`).
@@ -46,3 +46,12 @@ OVERVIEW.md, QUESTIONNAIRE.md). Spec: `src/backhome/forms/ds160/spec.yaml`.
 - `navigate` is blocked by the "Leave site?" guard on dirty pages; the sidebar links still work (real click).
   Sidebar coordinates: `src/backhome/ceac/nav.js`; scale by screenshot width / `innerWidth`.
 - Sections unlock sequentially; you cannot skip past an incomplete page.
+- A `<select>` that reveals more fields (e.g. Primary Occupation) does **not** react to JS `change`,
+  `onchange()` or `__doPostBack`: set the value, then real-click **Save** — the page re-renders with the fields.
+- "Do Not Know"/NA checkboxes set via `.checked = true` are **not persisted**; real-click them. Recon catches this.
+- Unchecking an NA box re-renders its textbox: re-`find` the textbox before typing.
+- Security & Background parts 1-5 are only Yes/No radios: once the user confirmed "all No", tick every visible
+  `*_1` radio, then real-click Next; snapshot each part.
+- The tool's output filter blocks results that look like `KEY=VALUE` lists or contain `__doPostBack` hrefs:
+  emit JSON / `a : b` pairs and never print `href`s.
+- The last section's Next goes to PHOTO: use **Save** there and stop. Photo, Review, Sign are the user's.

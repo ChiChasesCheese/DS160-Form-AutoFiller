@@ -1,6 +1,6 @@
 # DS160 DEMO0000001 — overview
 
-_Generated 2026-09-27 02:35 by `backhome overview`. Never edit by hand; regenerate._
+_Generated 2026-09-27 03:00 by `backhome overview`. Never edit by hand; regenerate._
 
 Legend: ✅ CEAC matches sheet · ❌ mismatch · ⚠️ field absent on live page · ⛔ value unknown (see questionnaire) · · page not captured yet. Confidence: verified > high > medium ≈ user > low > assumed.
 
@@ -15,11 +15,15 @@ Legend: ✅ CEAC matches sheet · ❌ mismatch · ⚠️ field absent on live pa
 | 7 | Passport | · todo | 16 | 0 | 0 | 0 | 1 |
 | 8 | U.S. Point of Contact | ⛔ blocked | 10 | 0 | 0 | 10 | 0 |
 | 9 | Family — Relatives | ⛔ blocked | 15 | 0 | 0 | 13 | 11 |
-| 10 | Work / Education — Present | ⛔ blocked | 12 | 0 | 0 | 12 | 0 |
-| 11 | Work / Education — Previous | ⛔ blocked | 4 | 0 | 0 | 4 | 0 |
-| 12 | Work / Education — Additional | ⛔ blocked | 8 | 0 | 0 | 8 | 0 |
-| 13 | Security and Background (parts 1-5) | ⛔ blocked | 5 | 0 | 0 | 5 | 0 |
-| 14 | Temporary Work Visa (H) | ⛔ blocked | 5 | 0 | 0 | 5 | 0 |
+| 10 | Work / Education — Present | ⛔ blocked | 13 | 0 | 0 | 13 | 0 |
+| 11 | Work / Education — Previous | ⛔ blocked | 2 | 0 | 0 | 2 | 0 |
+| 12 | Work / Education — Additional | ⛔ blocked | 7 | 0 | 0 | 7 | 0 |
+| 13 | Security and Background — Part 1 | ⛔ blocked | 3 | 0 | 0 | 3 | 0 |
+| 14 | Security and Background — Part 2 | ⛔ blocked | 7 | 0 | 0 | 7 | 0 |
+| 15 | Security and Background — Part 3 | ⛔ blocked | 12 | 0 | 0 | 12 | 0 |
+| 16 | Security and Background — Part 4 | ⛔ blocked | 5 | 0 | 0 | 5 | 0 |
+| 17 | Security and Background — Part 5 | ⛔ blocked | 5 | 0 | 0 | 5 | 0 |
+| 18 | Temporary Work Visa (H) | ⛔ blocked | 9 | 0 | 0 | 9 | 0 |
 
 ## Personal Information 1  (`Personal1`)
 
@@ -154,12 +158,13 @@ Legend: ✅ CEAC matches sheet · ❌ mismatch · ⚠️ field absent on live pa
 | | Field | Value | Confidence | Source of truth |
 |---|---|---|---|---|
 | ⛔ | Primary Occupation | ⛔ unknown |  | `` |
-| ⛔ | Present Employer Name | ⛔ unknown |  | `` |
-| ⛔ | Employer Address Line 1 | ⛔ unknown |  | `` |
+| ⛔ | Present Employer or School Name | ⛔ unknown |  | `` |
+| ⛔ | Employer Street Address (Line 1) | ⛔ unknown |  | `` |
 | ⛔ | Employer City | ⛔ unknown |  | `` |
-| ⛔ | Employer State | ⛔ unknown |  | `` |
+| ⛔ | Employer State/Province | ⛔ unknown |  | `` |
 | ⛔ | Employer ZIP | ⛔ unknown |  | `` |
-| ⛔ | Employer Phone | ⛔ unknown |  | `` |
+| ⛔ | Employer Phone Number | ⛔ unknown |  | `` |
+| ⛔ | Employer Country/Region | ⛔ unknown |  | `` |
 | ⛔ | Start Date | ⛔ unknown |  | `` |
 | ⛔ | Monthly Income in Local Currency | ⛔ unknown |  | `` |
 | ⛔ | Briefly describe your duties | ⛔ unknown |  | `` |
@@ -169,44 +174,92 @@ Legend: ✅ CEAC matches sheet · ❌ mismatch · ⚠️ field absent on live pa
 | | Field | Value | Confidence | Source of truth |
 |---|---|---|---|---|
 | ⛔ | Were you previously employed? | ⛔ unknown |  | `` |
-| ⛔ | Previous employers (last 5 years) | ⛔ unknown |  | `` |
 | ⛔ | Attended any educational institutions at secondary level or above? | ⛔ unknown |  | `` |
-| ⛔ | Schools | ⛔ unknown |  | `` |
 
 ## Work / Education — Additional  (`WorkEducation3`)
 
 | | Field | Value | Confidence | Source of truth |
 |---|---|---|---|---|
 | ⛔ | Belong to a clan or tribe? | ⛔ unknown |  | `` |
-| ⛔ | Languages you speak | ⛔ unknown |  | `` |
-| ⛔ | Traveled to any countries in the last five years? | ⛔ unknown |  | `` |
-| ⛔ | Countries visited (last 5 years) | ⛔ unknown |  | `` |
+| ⛔ | Language | ⛔ unknown |  | `` |
+| ⛔ | Traveled to any countries/regions in the last five years? | ⛔ unknown |  | `` |
 | ⛔ | Belonged to/worked for any professional, social or charitable organization? | ⛔ unknown |  | `` |
 | ⛔ | Specialized skills (firearms, explosives, nuclear, biological, chemical)? | ⛔ unknown |  | `` |
 | ⛔ | Ever served in the military? | ⛔ unknown |  | `` |
 | ⛔ | Served in a paramilitary/insurgent organization? | ⛔ unknown |  | `` |
 
-## Security and Background (parts 1-5)  (`SecurityandBackground`)
+## Security and Background — Part 1  (`SecurityandBackground1`)
 
 | | Field | Value | Confidence | Source of truth |
 |---|---|---|---|---|
-| ⛔ | Communicable disease / mental disorder / drug abuse (parts 1) | ⛔ unknown |  | `` |
-| ⛔ | Arrests / convictions / controlled substances / prostitution / money laundering / trafficking (part 2) | ⛔ unknown |  | `` |
-| ⛔ | Espionage / terrorism / genocide / torture / child soldiers etc. (part 3) | ⛔ unknown |  | `` |
-| ⛔ | Immigration fraud / removal / overstay / unlawful presence (part 4) | ⛔ unknown |  | `` |
-| ⛔ | Child custody / voting violation / renounced citizenship for tax (part 5) | ⛔ unknown |  | `` |
+| ⛔ | Part 1 (communicable disease, mental disorder, drug abuse): Disease | ⛔ unknown |  | `` |
+| ⛔ | Part 1 (communicable disease, mental disorder, drug abuse): Disorder | ⛔ unknown |  | `` |
+| ⛔ | Part 1 (communicable disease, mental disorder, drug abuse): Druguser | ⛔ unknown |  | `` |
 
-## Temporary Work Visa (H)  (`TempWork`)
+## Security and Background — Part 2  (`SecurityandBackground2`)
 
 | | Field | Value | Confidence | Source of truth |
 |---|---|---|---|---|
-| ⛔ | Name of person/company filing petition | ⛔ unknown |  | `` |
-| ⛔ | Petitioner address | ⛔ unknown |  | `` |
-| ⛔ | Petitioner phone | ⛔ unknown |  | `` |
-| ⛔ | Address where you will work | ⛔ unknown |  | `` |
+| ⛔ | Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): Arrested | ⛔ unknown |  | `` |
+| ⛔ | Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): ControlledSubstances | ⛔ unknown |  | `` |
+| ⛔ | Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): Prostitution | ⛔ unknown |  | `` |
+| ⛔ | Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): MoneyLaundering | ⛔ unknown |  | `` |
+| ⛔ | Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): HumanTrafficking | ⛔ unknown |  | `` |
+| ⛔ | Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): AssistedSevereTrafficking | ⛔ unknown |  | `` |
+| ⛔ | Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): HumanTraffickingRelated | ⛔ unknown |  | `` |
+
+## Security and Background — Part 3  (`SecurityandBackground3`)
+
+| | Field | Value | Confidence | Source of truth |
+|---|---|---|---|---|
+| ⛔ | Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): IllegalActivity | ⛔ unknown |  | `` |
+| ⛔ | Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): TerroristActivity | ⛔ unknown |  | `` |
+| ⛔ | Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): TerroristSupport | ⛔ unknown |  | `` |
+| ⛔ | Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): TerroristOrg | ⛔ unknown |  | `` |
+| ⛔ | Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): TerroristRel | ⛔ unknown |  | `` |
+| ⛔ | Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): Genocide | ⛔ unknown |  | `` |
+| ⛔ | Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): Torture | ⛔ unknown |  | `` |
+| ⛔ | Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): ExViolence | ⛔ unknown |  | `` |
+| ⛔ | Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): ChildSoldier | ⛔ unknown |  | `` |
+| ⛔ | Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): ReligiousFreedom | ⛔ unknown |  | `` |
+| ⛔ | Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): PopulationControls | ⛔ unknown |  | `` |
+| ⛔ | Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): Transplant | ⛔ unknown |  | `` |
+
+## Security and Background — Part 4  (`SecurityandBackground4`)
+
+| | Field | Value | Confidence | Source of truth |
+|---|---|---|---|---|
+| ⛔ | Part 4 (immigration: removal, fraud, failure to attend hearing, visa violation/overstay, deportation): RemovalHearing | ⛔ unknown |  | `` |
+| ⛔ | Part 4 (immigration: removal, fraud, failure to attend hearing, visa violation/overstay, deportation): ImmigrationFraud | ⛔ unknown |  | `` |
+| ⛔ | Part 4 (immigration: removal, fraud, failure to attend hearing, visa violation/overstay, deportation): FailToAttend | ⛔ unknown |  | `` |
+| ⛔ | Part 4 (immigration: removal, fraud, failure to attend hearing, visa violation/overstay, deportation): VisaViolation | ⛔ unknown |  | `` |
+| ⛔ | Part 4 (immigration: removal, fraud, failure to attend hearing, visa violation/overstay, deportation): Deport | ⛔ unknown |  | `` |
+
+## Security and Background — Part 5  (`SecurityandBackground5`)
+
+| | Field | Value | Confidence | Source of truth |
+|---|---|---|---|---|
+| ⛔ | Part 5 (custody, illegal voting, tax renunciation, J-1 home residency, F-1 public school without reimbursement): ChildCustody | ⛔ unknown |  | `` |
+| ⛔ | Part 5 (custody, illegal voting, tax renunciation, J-1 home residency, F-1 public school without reimbursement): VotingViolation | ⛔ unknown |  | `` |
+| ⛔ | Part 5 (custody, illegal voting, tax renunciation, J-1 home residency, F-1 public school without reimbursement): RenounceExp | ⛔ unknown |  | `` |
+| ⛔ | Part 5 (custody, illegal voting, tax renunciation, J-1 home residency, F-1 public school without reimbursement): ExchangeVisitor | ⛔ unknown |  | `` |
+| ⛔ | Part 5 (custody, illegal voting, tax renunciation, J-1 home residency, F-1 public school without reimbursement): AttWoReimb | ⛔ unknown |  | `` |
+
+## Temporary Work Visa (H)  (`TemporaryWork`)
+
+| | Field | Value | Confidence | Source of truth |
+|---|---|---|---|---|
+| ⛔ | Application Receipt/Petition Number | ⛔ unknown |  | `` |
+| ⛔ | Name of Person/Company who Filed Petition | ⛔ unknown |  | `` |
+| ⛔ | Name of Employer | ⛔ unknown |  | `` |
+| ⛔ | Worksite Street Address (Line 1) | ⛔ unknown |  | `` |
+| ⛔ | Worksite City | ⛔ unknown |  | `` |
+| ⛔ | Worksite State | ⛔ unknown |  | `` |
+| ⛔ | Worksite ZIP | ⛔ unknown |  | `` |
+| ⛔ | Phone Number | ⛔ unknown |  | `` |
 | ⛔ | Monthly income (USD) | ⛔ unknown |  | `` |
 
-## Open questions (54) — see QUESTIONNAIRE.md
+## Open questions (53) — see QUESTIONNAIRE.md
 
 - **Q1** [missing] Petition Receipt Number → `app.petition_receipt`
 - **Q2** [missing] Have you made specific travel plans? → `app.specific_travel_plans_ind`
@@ -242,23 +295,22 @@ Legend: ✅ CEAC matches sheet · ❌ mismatch · ⚠️ field absent on live pa
 - **Q32** [missing] 在美国有没有直系亲属（配偶/未婚夫妻/子女/兄弟姐妹）？有的话给姓名、关系、身份 → `family.us_immediate_relatives_ind`
 - **Q33** [missing] 在美国有没有其他亲戚？ → `family.us_other_relatives_ind`
 - **Q34** [missing] Primary Occupation → `employment.current.ds160_occupation`
-- **Q35** [missing] Present Employer Name → `employment.current.employer`
-- **Q36** [missing] Employer Address Line 1 → `employment.current.address.line1`
+- **Q35** [missing] Present Employer or School Name → `employment.current.employer`
+- **Q36** [missing] Employer Street Address (Line 1) → `employment.current.address.line1`
 - **Q37** [missing] Employer City → `employment.current.address.city`
-- **Q38** [missing] Employer State → `employment.current.address.state`
+- **Q38** [missing] Employer State/Province → `employment.current.address.state_name`
 - **Q39** [missing] Employer ZIP → `employment.current.address.zip`
 - **Q40** [missing] 雇主电话（DS-160 必填，可用公司总机） → `employment.current.phone`
-- **Q41** [missing] Start Date → `employment.current.start`
-- **Q42** [missing] 当前月收入（当地货币，税前） → `employment.current.monthly_income_usd`
-- **Q43** [missing] Briefly describe your duties → `employment.current.duties_ds160`
-- **Q44** [missing] Were you previously employed? → `employment.previous_ind`
-- **Q45** [missing] 过去 5 年每个雇主（含实习）的地址、电话、职位、起止日期、主管姓名、职责 → `employment.previous_ds160`
+- **Q41** [missing] Employer Country/Region → `employment.current.address.country`
+- **Q42** [missing] Start Date → `employment.current.start`
+- **Q43** [missing] 当前月收入（当地货币，税前） → `employment.current.monthly_income_usd`
+- **Q44** [missing] Briefly describe your duties → `employment.current.duties_ds160`
+- **Q45** [missing] Were you previously employed? → `employment.previous_ind`
 - **Q46** [missing] Attended any educational institutions at secondary level or above? → `education.attended_ind`
-- **Q47** [missing] Schools → `education.schools`
-- **Q48** [missing] 背景：是否属于某部落/氏族、参加过专业/社会/慈善组织、有枪械爆炸物核生化专长、参加过准军事/叛乱组织？全部否就回 No → `declarations.background`
-- **Q49** [missing] 你会说的语言（例：CHINESE, ENGLISH） → `contact.languages`
-- **Q50** [missing] Traveled to any countries in the last five years? → `travel.countries_visited_5y_ind`
-- **Q51** [missing] 过去 5 年去过的国家/地区（除美国） → `travel.countries_visited_5y`
-- **Q52** [missing] 是否服过兵役？（大学军训不算） → `declarations.military_service`
-- **Q53** [missing] 安全背景问题（传染病、犯罪记录、毒品、恐怖活动、移民欺诈、逾期滞留等约 25 题）——若全部为“否”，回复“安全问题全部 No” → `declarations.security`
-- **Q54** [missing] H-1B 工作地点地址（与 LCA/I-129 一致） → `employment.current.worksite_line1`
+- **Q47** [missing] 背景：是否属于某部落/氏族、参加过专业/社会/慈善组织、有枪械爆炸物核生化专长、参加过准军事/叛乱组织？全部否就回 No → `declarations.background`
+- **Q48** [missing] 你会说的语言（例：MANDARIN, ENGLISH） → `contact.languages`
+- **Q49** [missing] Traveled to any countries/regions in the last five years? → `travel.countries_visited_5y_ind`
+- **Q50** [missing] 是否服过兵役？（大学军训不算） → `declarations.military_service`
+- **Q51** [missing] 安全背景问题（传染病、犯罪记录、毒品、恐怖活动、移民欺诈、逾期滞留等约 25 题）——若全部为“否”，回复“安全问题全部 No” → `declarations.security`
+- **Q52** [missing] H-1B 工作地点地址（与 LCA/I-129 一致） → `employment.current.worksite_line1`
+- **Q53** [missing] Worksite State → `employment.current.address.state`

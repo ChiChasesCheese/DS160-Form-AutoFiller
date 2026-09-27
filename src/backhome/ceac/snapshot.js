@@ -1,5 +1,5 @@
 // CEAC page snapshot -> compact TSV (id \t value \t display). Run via Claude-in-Chrome javascript_tool.
-// Tool output is truncated at ~1.5k chars, so: `window.__snap = (<this>)()` then read `window.__snap.slice(i, i+1400)`.
+// Tool output is truncated at ~1k chars, so: `window.__snap = (<this>)()` then read `window.__snap.slice(i, i+900)`.
 // Radio groups collapse to one row (value = checked option's value, '' if none). Checkbox -> '1'/'0'.
 () => {
   const P = 'ctl00_SiteContentPlaceHolder_FormView1_';

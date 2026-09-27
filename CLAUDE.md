@@ -35,5 +35,5 @@ BACKHOME_HOME=examples uv run backhome recon DEMO0000001   # demo on the fake ap
 ## Gotchas
 - CEAC session is per tab; Save/Next need a real mouse click; many radios/“Add Another” postback;
   date option values differ per page (spec `day`/`month`); details in `skills/ds160-autofill/SKILL.md`.
-- Claude-in-Chrome JS output truncates ~1.5k chars → stash in `window.__snap` and read in slices.
+- Claude-in-Chrome JS output truncates ~1k chars → stash in `window.__snap` and read in slices.
 - `pypdf` needs the `crypto` extra for AES-encrypted I-20s; OCR needs `tesseract` (+`chi_sim` for Chinese).

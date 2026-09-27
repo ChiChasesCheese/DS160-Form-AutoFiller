@@ -10,7 +10,9 @@ Answer any way you like; the agent persists each answer with its source:
 
 ### Q1 · Petition Receipt Number
 
-- key: `app.petition_receipt` · pages: Travel · kind: **missing**
+- key: `app.petition_receipt` · pages: Travel, TemporaryWork · kind: **missing**
+  - Petition Receipt Number: ?
+  - Application Receipt/Petition Number: ?
 - answer: 
 
 ### Q2 · Have you made specific travel plans?
@@ -200,67 +202,70 @@ Answer any way you like; the agent persists each answer with its source:
 - key: `employment.current.ds160_occupation` · pages: WorkEducation1 · kind: **missing**
 - answer: 
 
-### Q35 · Present Employer Name
+### Q35 · Present Employer or School Name
 
-- key: `employment.current.employer` · pages: WorkEducation1, TempWork · kind: **missing**
-  - Present Employer Name: ?
-  - Name of person/company filing petition: ?
+- key: `employment.current.employer` · pages: WorkEducation1, TemporaryWork · kind: **missing**
+  - Present Employer or School Name: ?
+  - Name of Person/Company who Filed Petition: ?
+  - Name of Employer: ?
 - answer: 
 
-### Q36 · Employer Address Line 1
+### Q36 · Employer Street Address (Line 1)
 
-- key: `employment.current.address.line1` · pages: WorkEducation1, TempWork · kind: **missing**
-  - Employer Address Line 1: ?
-  - Petitioner address: ?
+- key: `employment.current.address.line1` · pages: WorkEducation1 · kind: **missing**
 - answer: 
 
 ### Q37 · Employer City
 
-- key: `employment.current.address.city` · pages: WorkEducation1 · kind: **missing**
+- key: `employment.current.address.city` · pages: WorkEducation1, TemporaryWork · kind: **missing**
+  - Employer City: ?
+  - Worksite City: ?
 - answer: 
 
-### Q38 · Employer State
+### Q38 · Employer State/Province
 
-- key: `employment.current.address.state` · pages: WorkEducation1 · kind: **missing**
+- key: `employment.current.address.state_name` · pages: WorkEducation1 · kind: **missing**
 - answer: 
 
 ### Q39 · Employer ZIP
 
-- key: `employment.current.address.zip` · pages: WorkEducation1 · kind: **missing**
+- key: `employment.current.address.zip` · pages: WorkEducation1, TemporaryWork · kind: **missing**
+  - Employer ZIP: ?
+  - Worksite ZIP: ?
 - answer: 
 
 ### Q40 · 雇主电话（DS-160 必填，可用公司总机）
 
-- key: `employment.current.phone` · pages: WorkEducation1, TempWork · kind: **missing**
-  - Employer Phone: ?
-  - Petitioner phone: ?
+- key: `employment.current.phone` · pages: WorkEducation1, TemporaryWork · kind: **missing**
+  - Employer Phone Number: ?
+  - Phone Number: ?
 - answer: 
 
-### Q41 · Start Date
+### Q41 · Employer Country/Region
+
+- key: `employment.current.address.country` · pages: WorkEducation1 · kind: **missing**
+- answer: 
+
+### Q42 · Start Date
 
 - key: `employment.current.start` · pages: WorkEducation1 · kind: **missing**
 - answer: 
 
-### Q42 · 当前月收入（当地货币，税前）
+### Q43 · 当前月收入（当地货币，税前）
 
-- key: `employment.current.monthly_income_usd` · pages: WorkEducation1, TempWork · kind: **missing**
+- key: `employment.current.monthly_income_usd` · pages: WorkEducation1, TemporaryWork · kind: **missing**
   - Monthly Income in Local Currency: ?
   - Monthly income (USD): ?
 - answer: 
 
-### Q43 · Briefly describe your duties
+### Q44 · Briefly describe your duties
 
 - key: `employment.current.duties_ds160` · pages: WorkEducation1 · kind: **missing**
 - answer: 
 
-### Q44 · Were you previously employed?
+### Q45 · Were you previously employed?
 
 - key: `employment.previous_ind` · pages: WorkEducation2 · kind: **missing**
-- answer: 
-
-### Q45 · 过去 5 年每个雇主（含实习）的地址、电话、职位、起止日期、主管姓名、职责
-
-- key: `employment.previous_ds160` · pages: WorkEducation2 · kind: **missing**
 - answer: 
 
 ### Q46 · Attended any educational institutions at secondary level or above?
@@ -268,12 +273,7 @@ Answer any way you like; the agent persists each answer with its source:
 - key: `education.attended_ind` · pages: WorkEducation2 · kind: **missing**
 - answer: 
 
-### Q47 · Schools
-
-- key: `education.schools` · pages: WorkEducation2 · kind: **missing**
-- answer: 
-
-### Q48 · 背景：是否属于某部落/氏族、参加过专业/社会/慈善组织、有枪械爆炸物核生化专长、参加过准军事/叛乱组织？全部否就回 No
+### Q47 · 背景：是否属于某部落/氏族、参加过专业/社会/慈善组织、有枪械爆炸物核生化专长、参加过准军事/叛乱组织？全部否就回 No
 
 - key: `declarations.background` · pages: WorkEducation3 · kind: **missing**
   - Belong to a clan or tribe?: ?
@@ -282,37 +282,64 @@ Answer any way you like; the agent persists each answer with its source:
   - Served in a paramilitary/insurgent organization?: ?
 - answer: 
 
-### Q49 · 你会说的语言（例：CHINESE, ENGLISH）
+### Q48 · 你会说的语言（例：MANDARIN, ENGLISH）
 
 - key: `contact.languages` · pages: WorkEducation3 · kind: **missing**
 - answer: 
 
-### Q50 · Traveled to any countries in the last five years?
+### Q49 · Traveled to any countries/regions in the last five years?
 
 - key: `travel.countries_visited_5y_ind` · pages: WorkEducation3 · kind: **missing**
 - answer: 
 
-### Q51 · 过去 5 年去过的国家/地区（除美国）
-
-- key: `travel.countries_visited_5y` · pages: WorkEducation3 · kind: **missing**
-- answer: 
-
-### Q52 · 是否服过兵役？（大学军训不算）
+### Q50 · 是否服过兵役？（大学军训不算）
 
 - key: `declarations.military_service` · pages: WorkEducation3 · kind: **missing**
 - answer: 
 
-### Q53 · 安全背景问题（传染病、犯罪记录、毒品、恐怖活动、移民欺诈、逾期滞留等约 25 题）——若全部为“否”，回复“安全问题全部 No”
+### Q51 · 安全背景问题（传染病、犯罪记录、毒品、恐怖活动、移民欺诈、逾期滞留等约 25 题）——若全部为“否”，回复“安全问题全部 No”
 
-- key: `declarations.security` · pages: SecurityandBackground · kind: **missing**
-  - Communicable disease / mental disorder / drug abuse (parts 1): ?
-  - Arrests / convictions / controlled substances / prostitution / money laundering / trafficking (part 2): ?
-  - Espionage / terrorism / genocide / torture / child soldiers etc. (part 3): ?
-  - Immigration fraud / removal / overstay / unlawful presence (part 4): ?
-  - Child custody / voting violation / renounced citizenship for tax (part 5): ?
+- key: `declarations.security` · pages: SecurityandBackground1, SecurityandBackground2, SecurityandBackground3, SecurityandBackground4, SecurityandBackground5 · kind: **missing**
+  - Part 1 (communicable disease, mental disorder, drug abuse): Disease: ?
+  - Part 1 (communicable disease, mental disorder, drug abuse): Disorder: ?
+  - Part 1 (communicable disease, mental disorder, drug abuse): Druguser: ?
+  - Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): Arrested: ?
+  - Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): ControlledSubstances: ?
+  - Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): Prostitution: ?
+  - Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): MoneyLaundering: ?
+  - Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): HumanTrafficking: ?
+  - Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): AssistedSevereTrafficking: ?
+  - Part 2 (criminal: arrests, drugs, prostitution, money laundering, trafficking): HumanTraffickingRelated: ?
+  - Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): IllegalActivity: ?
+  - Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): TerroristActivity: ?
+  - Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): TerroristSupport: ?
+  - Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): TerroristOrg: ?
+  - Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): TerroristRel: ?
+  - Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): Genocide: ?
+  - Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): Torture: ?
+  - Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): ExViolence: ?
+  - Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): ChildSoldier: ?
+  - Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): ReligiousFreedom: ?
+  - Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): PopulationControls: ?
+  - Part 3 (security: espionage, terrorism, genocide, torture, child soldiers, religious freedom, forced sterilization, organ harvesting): Transplant: ?
+  - Part 4 (immigration: removal, fraud, failure to attend hearing, visa violation/overstay, deportation): RemovalHearing: ?
+  - Part 4 (immigration: removal, fraud, failure to attend hearing, visa violation/overstay, deportation): ImmigrationFraud: ?
+  - Part 4 (immigration: removal, fraud, failure to attend hearing, visa violation/overstay, deportation): FailToAttend: ?
+  - Part 4 (immigration: removal, fraud, failure to attend hearing, visa violation/overstay, deportation): VisaViolation: ?
+  - Part 4 (immigration: removal, fraud, failure to attend hearing, visa violation/overstay, deportation): Deport: ?
+  - Part 5 (custody, illegal voting, tax renunciation, J-1 home residency, F-1 public school without reimbursement): ChildCustody: ?
+  - Part 5 (custody, illegal voting, tax renunciation, J-1 home residency, F-1 public school without reimbursement): VotingViolation: ?
+  - Part 5 (custody, illegal voting, tax renunciation, J-1 home residency, F-1 public school without reimbursement): RenounceExp: ?
+  - Part 5 (custody, illegal voting, tax renunciation, J-1 home residency, F-1 public school without reimbursement): ExchangeVisitor: ?
+  - Part 5 (custody, illegal voting, tax renunciation, J-1 home residency, F-1 public school without reimbursement): AttWoReimb: ?
 - answer: 
 
-### Q54 · H-1B 工作地点地址（与 LCA/I-129 一致）
+### Q52 · H-1B 工作地点地址（与 LCA/I-129 一致）
 
-- key: `employment.current.worksite_line1` · pages: TempWork · kind: **missing**
+- key: `employment.current.worksite_line1` · pages: TemporaryWork · kind: **missing**
+- answer: 
+
+### Q53 · Worksite State
+
+- key: `employment.current.address.state` · pages: TemporaryWork · kind: **missing**
 - answer: 

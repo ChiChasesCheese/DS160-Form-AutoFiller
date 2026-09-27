@@ -120,10 +120,17 @@ def _resolve(f: dict, p: Profile, ctx: dict | None) -> Fact | None:
         return None
     if ctx is not None:  # inside a list item: relative key into the item dict
         item, parent = ctx["item"], ctx["fact"]
-        v = item.get(key)
-        conf = Confidence(item.get("confidence", parent.confidence.value))
-        return Fact(v, conf, item.get("source", parent.source))
+        v = item if key == "." else _dig(item, key)  # "." = the item itself (list of scalars)
+        own = item if isinstance(item, dict) else {}
+        conf = Confidence(own.get("confidence", parent.confidence.value))
+        return Fact(v, conf, own.get("source", parent.source))
     return p.get(key)
+
+
+def _dig(node: Any, dotted: str) -> Any:
+    for k in dotted.split("."):
+        node = node.get(k) if isinstance(node, dict) else None
+    return node
 
 
 def _truthy(p: Profile, path: str) -> bool:
