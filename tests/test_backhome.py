@@ -104,6 +104,9 @@ def test_answers_overlay_wins_and_persists(home):
     again = Profile(home / "data/profile")
     f = again.get("family.father.surname")
     assert (f.value, f.confidence, f.source) == ("LI", Confidence.USER, "user:2026-09-27")
+    again.answer("family.mother", {"given_names": "FANG", "date_of_birth": dt.date(1965, 1, 2)})
+    m = Profile(home / "data/profile").get("family.mother.date_of_birth")   # prefix answer covers children
+    assert m.value == dt.date(1965, 1, 2) and m.confidence == Confidence.USER
     with pytest.raises(ValueError):
         again.answer("family.father.surname", "LI", source="my memory")  # not a valid source reference
 

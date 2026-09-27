@@ -78,6 +78,13 @@ def _split(path: str) -> list[str | int]:
     return parts
 
 
+def _join(parts: list[str | int]) -> str:
+    out = ""
+    for p in parts:
+        out += f"[{p}]" if isinstance(p, int) else (f".{p}" if out else p)
+    return out
+
+
 class Profile:
     """Read-only view over a profile directory with an answers overlay."""
 
@@ -103,13 +110,20 @@ class Profile:
 
     # ── lookup ──────────────────────────────────────────────────────────
     def get(self, path: str) -> Fact | None:
-        if path in self.answers:
-            return self._fact(self.answers[path], ns=None)
         parts = _split(path)
-        node: Any = self.docs
-        inherited: Fact | None = None  # provenance of the nearest enclosing fact / item with a source
+        # answers overlay: the longest answered prefix wins (answering `app.us_contact` covers its children)
+        for n in range(len(parts), 0, -1):
+            key = _join(parts[:n])
+            if key in self.answers:
+                return self._descend(self.answers[key], parts[n:], ns=None, start=0)
+        return self._descend(self.docs, parts, ns=str(parts[0]), start=1)
+
+    def _descend(self, node: Any, parts: list, ns: str | None, start: int) -> Fact | None:
+        inherited: Fact | None = self._provenance(node, None) if start == 0 else None
+        if start == 0 and parts and is_fact_node(node):
+            node = node["value"]
         for i, p in enumerate(parts):
-            if i > 0:
+            if i >= start:
                 inherited = self._provenance(node, inherited)
                 if is_fact_node(node):
                     node = node["value"]
@@ -120,7 +134,7 @@ class Profile:
             else:
                 return None
         if is_fact_node(node) or inherited is None:
-            return self._fact(node, ns=str(parts[0]))
+            return self._fact(node, ns=ns)
         return Fact(node, inherited.confidence, inherited.source, inherited.note)
 
     @staticmethod
@@ -164,8 +178,11 @@ class Profile:
                 for i, v in enumerate(node):
                     yield from rec(v, f"{path}[{i}]", ns, inh)
 
+        def shadowed(path: str) -> bool:  # overridden by an answer on itself or an ancestor
+            return any(path == k or path.startswith((k + ".", k + "[")) for k in self.answers)
+
         for ns, doc in self.docs.items():
-            yield from rec(doc, ns, ns, None)
+            yield from ((p, f) for p, f in rec(doc, ns, ns, None) if not shadowed(p))
         for path, node in self.answers.items():
             yield path, self._fact(node, None)
 

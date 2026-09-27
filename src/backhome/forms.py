@@ -209,8 +209,9 @@ def _list_cells(node: str, f: dict, p: Profile) -> Iterator[Cell]:
         yield Cell(page=node, id=f["item"][0]["id"].format(i=0), label=f.get("label", ""), expected=None,
                    ask=f.get("ask", ""), path=f["from"])
         return
-    for i, item in enumerate(items[: f.get("max", 99)]):
-        ctx = {"i": i, "item": item, "fact": fact}
+    for i, _ in enumerate(items[: f.get("max", 99)]):
+        item_fact = p.get(f"{f['from']}[{i}]")  # honours item-level answers overlay
+        ctx = {"i": i, "item": item_fact.value, "fact": item_fact}
         for sub in f["item"]:
             sub = {**sub, "label": f"{f.get('label', '')} #{i + 1} {sub.get('label', '')}".strip()}
             for c in _cells(node, sub, p, ctx):
