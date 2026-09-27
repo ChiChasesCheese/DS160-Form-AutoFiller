@@ -1,0 +1,248 @@
+# DS-160 (Online Nonimmigrant Visa Application) field spec — CEAC GenNIV, observed 2026-09.
+# Element ids are CEAC ids with the prefix `ctl00_SiteContentPlaceHolder_FormView1_` removed.
+# Pages with `ids_verified: false` were not yet opened live: their ids are placeholders (TBD_*) to be
+# replaced from a snapshot the first time an agent reaches the page. Everything else was captured live.
+#
+# Date dropdown formats differ per page (observed): day num|num2, month num|num2|MMM.
+form: ds160
+title: Online Nonimmigrant Visa Application (DS-160)
+url: https://ceac.state.gov/GenNIV/
+id_prefix: ctl00_SiteContentPlaceHolder_FormView1_
+
+# Questionnaire prompts for grouped fields (one question per group instead of one per input).
+groups:
+  family.father: "父亲信息：拼音姓、拼音名、出生日期(YYYY-MM-DD)、目前是否在美国。最好放户口本/出生证明到 raw/inbox/"
+  family.mother: "母亲信息：拼音姓、拼音名、出生日期(YYYY-MM-DD)、目前是否在美国"
+  app.us_contact: "美国联系人（H 类通常填雇主的主管/HR）：姓名、单位、关系、地址、电话、邮箱"
+  declarations.security: "安全背景问题（传染病、犯罪记录、毒品、恐怖活动、移民欺诈、逾期滞留等约 25 题）——若全部为“否”，回复“安全问题全部 No”"
+  declarations.background: "背景：是否属于某部落/氏族、参加过专业/社会/慈善组织、有枪械爆炸物核生化专长、参加过准军事/叛乱组织？全部否就回 No"
+  declarations.history: "签证/入境历史（全部“否”就回 No）：美国签证丢失/被盗？被取消/吊销？被拒签/入境被拒/撤回入境申请？有人替你提交过移民申请（I-130/I-140，H-1B 不算）？护照丢失/被盗过？"
+  contact.social: "过去 5 年用过的社交媒体平台+用户名（DS-160 列表：Douban/Facebook/Instagram/LinkedIn/QZone/Reddit/Sina Weibo/Tencent Weibo/Twitter/YouTube…；微信/小红书不在列表）"
+  contact.phones: "其他电话：第二个号码、工作电话；没有就回“不适用”"
+
+maps:
+  country: &country {CHINA: CHIN, USA: USA, UNITED STATES: USA}
+  yes_no: &yn {true: Y, false: N}
+
+pages:
+  - node: Personal1
+    title: Personal Information 1
+    fields:
+      - {id: tbxAPP_SURNAME, label: "Surnames", from: identity.name.surname, check: ceac_name}
+      - {id: tbxAPP_GIVEN_NAME, label: "Given Names", from: identity.name.given_names, check: ceac_name}
+      - {id: tbxAPP_FULL_NAME_NATIVE, na: cbexAPP_FULL_NAME_NATIVE_NA, label: "Full Name in Native Alphabet", from: identity.name.full_name_native, keep_case: true}
+      - {id: rblOtherNames, type: yesno, label: "Have you ever used other names?", from: identity.name.other_names_used_ind}
+      - {id: rblTelecodeQuestion, type: yesno, label: "Do you have a telecode that represents your name?", from: identity.name.telecode_ind}
+      - {id: tbxAPP_TelecodeSURNAME, label: "Telecode Surnames", from: identity.name.telecode_surname, check: telecode, when: identity.name.telecode_ind}
+      - {id: tbxAPP_TelecodeGIVEN_NAME, label: "Telecode Given Names", from: identity.name.telecode_given, check: telecode, when: identity.name.telecode_ind}
+      - {id: ddlAPP_GENDER, type: select, label: "Sex", from: identity.sex}
+      - {id: ddlAPP_MARITAL_STATUS, type: select, label: "Marital Status", from: identity.marital_status,
+         map: {SINGLE: S, MARRIED: M, COMMON LAW MARRIAGE: C, CIVIL UNION/DOMESTIC PARTNERSHIP: P, WIDOWED: W, DIVORCED: D, LEGALLY SEPARATED: L, OTHER: O}}
+      - {type: date, ids: [ddlDOBDay, ddlDOBMonth, tbxDOBYear], day: num2, month: MMM, label: "Date of Birth", from: identity.date_of_birth, check: past_date}
+      - {id: tbxAPP_POB_CITY, label: "City of Birth", from: identity.place_of_birth.city, check: ceac_address}
+      - {id: tbxAPP_POB_ST_PROVINCE, na: cbexAPP_POB_ST_PROVINCE_NA, label: "State/Province of Birth", from: identity.place_of_birth.province}
+      - {id: ddlAPP_POB_CNTRY, type: select, map: *country, label: "Country/Region of Birth", from: identity.place_of_birth.country}
+
+  - node: Personal2
+    title: Personal Information 2
+    fields:
+      - {id: ddlAPP_NATL, type: select, map: *country, label: "Nationality", from: identity.nationality}
+      - {id: rblAPP_OTH_NATL_IND, type: yesno, label: "Other nationality?", from: identity.other_nationality_ind}
+      - {id: rblPermResOtherCntryInd, type: yesno, label: "Permanent resident of another country?", from: identity.permanent_resident_other_ind}
+      - {id: tbxAPP_NATIONAL_ID, na: cbexAPP_NATIONAL_ID_NA, label: "National Identification Number", from: identity.prc_national_id.number, check: prc_id, sensitive: true}
+      - {type: split, ids: [tbxAPP_SSN1, tbxAPP_SSN2, tbxAPP_SSN3], na: cbexAPP_SSN_NA, label: "U.S. Social Security Number", from: identity.us_ids.ssn, check: ssn, sensitive: true}
+      - {id: tbxAPP_TAX_ID, na: cbexAPP_TAX_ID_NA, label: "U.S. Taxpayer ID Number", from: identity.us_ids.taxpayer_id}
+
+  - node: Travel
+    title: Travel Information
+    fields:
+      - {id: dlPrincipalAppTravel_ctl00_ddlPurposeOfTrip, type: select, label: "Purpose of Trip", from: app.purpose.category}
+      - {id: dlPrincipalAppTravel_ctl00_ddlOtherPurpose, type: select, label: "Specify", from: app.purpose.visa_class}
+      - {id: dlPrincipalAppTravel_ctl00_tbxPRIN_APP_PETITION_NUM, label: "Petition Receipt Number", from: app.petition_receipt, check: uscis_receipt}
+      - {id: rblSpecificTravel, type: yesno, label: "Have you made specific travel plans?", from: app.specific_travel_plans_ind}
+      - {type: date, ids: [ddlTRAVEL_DTEDay, ddlTRAVEL_DTEMonth, tbxTRAVEL_DTEYear], day: num, month: num, label: "Intended Date of Arrival", from: app.intended_arrival}
+      - {id: tbxTRAVEL_LOS, label: "Intended Length of Stay", from: app.length_of_stay.value}
+      - {id: ddlTRAVEL_LOS_CD, type: select, label: "Length of Stay unit", from: app.length_of_stay.unit, map: {YEARS: Y, MONTHS: M, WEEKS: W, DAYS: D}}
+      - {id: tbxStreetAddress1, label: "US stay address line 1", from: app.us_address.line1, check: ceac_address}
+      - {id: tbxStreetAddress2, label: "US stay address line 2", from: app.us_address.line2, check: ceac_address, required: false}
+      - {id: tbxCity, label: "City", from: app.us_address.city}
+      - {id: ddlTravelState, type: select, label: "State", from: app.us_address.state}
+      - {id: tbZIPCode, label: "ZIP Code", from: app.us_address.zip, check: us_zip}
+      - {id: ddlWhoIsPaying, type: select, label: "Person/Entity Paying for Your Trip", from: app.payer, map: {SELF: S, OTHER PERSON: O, PRESENT EMPLOYER: P, EMPLOYER IN THE U.S.: U, OTHER COMPANY/ORGANIZATION: C}}
+
+  - node: TravelCompanions
+    title: Travel Companions
+    fields:
+      - {id: rblOtherPersonsTravelingWithYou, type: yesno, label: "Are there other persons traveling with you?", from: app.travel_companions_ind}
+
+  - node: PreviousUSTravel
+    title: Previous U.S. Travel
+    fields:
+      - {id: rblPREV_US_TRAVEL_IND, type: yesno, label: "Have you ever been in the U.S.?", from: us_immigration.ever_in_us_ind}
+      - type: list
+        label: U.S. visit
+        from: us_immigration.ds160_last_visits
+        max: 5
+        ask: "最近 5 次入境美国的日期和停留时长（I-94 travel history 截图/PDF 放进 raw/inbox/ 最好）"
+        item:
+          - {type: date, ids: ["dtlPREV_US_VISIT_ctl{i:02d}_ddlPREV_US_VISIT_DTEDay", "dtlPREV_US_VISIT_ctl{i:02d}_ddlPREV_US_VISIT_DTEMonth", "dtlPREV_US_VISIT_ctl{i:02d}_tbxPREV_US_VISIT_DTEYear"], day: num, month: num, label: "arrived", from: arrived, id: "dtlPREV_US_VISIT_ctl{i:02d}_ddlPREV_US_VISIT_DTEDay"}
+          - {id: "dtlPREV_US_VISIT_ctl{i:02d}_tbxPREV_US_VISIT_LOS", label: "length", from: los}
+          - {id: "dtlPREV_US_VISIT_ctl{i:02d}_ddlPREV_US_VISIT_LOS_CD", type: select, label: "unit", from: unit, map: {YEARS: Y, MONTHS: M, WEEKS: W, DAYS: D, "<24H": H}}
+      - {id: rblPREV_US_DRIVER_LIC_IND, type: yesno, label: "Do you or did you ever hold a U.S. Driver's License?", from: identity.us_ids.driver_license_ind}
+      - type: list
+        label: U.S. driver license
+        from: identity.us_ids.driver_licenses
+        when: identity.us_ids.driver_license_ind
+        item:
+          - {id: "dtlUS_DRIVER_LICENSE_ctl{i:02d}_tbxUS_DRIVER_LICENSE", label: "number", from: number, check: driver_license}
+          - {id: "dtlUS_DRIVER_LICENSE_ctl{i:02d}_ddlUS_DRIVER_LICENSE_STATE", type: select, label: "state", from: state}
+      - {id: rblPREV_VISA_IND, type: yesno, label: "Have you ever been issued a U.S. Visa?", from: us_immigration.ever_issued_visa_ind}
+      - {type: date, ids: [ddlPREV_VISA_ISSUED_DTEDay, ddlPREV_VISA_ISSUED_DTEMonth, tbxPREV_VISA_ISSUED_DTEYear], day: num, month: num, label: "Date Last Visa Was Issued", from: "us_immigration.visas[0].issue_date", when: us_immigration.ever_issued_visa_ind}
+      - {id: tbxPREV_VISA_FOIL_NUMBER, na: cbxPREV_VISA_FOIL_NUMBER_NA, label: "Visa Number", from: "us_immigration.visas[0].foil_number", check: us_visa_foil, when: us_immigration.ever_issued_visa_ind}
+      - {id: rblPREV_VISA_SAME_TYPE_IND, type: yesno, label: "Applying for the same type of visa?", from: app.prev_visa_same_type_ind, when: us_immigration.ever_issued_visa_ind}
+      - {id: rblPREV_VISA_SAME_CNTRY_IND, type: yesno, label: "Applying in the same country where the visa was issued, and is it your principal residence?", from: app.prev_visa_same_country_ind, when: us_immigration.ever_issued_visa_ind}
+      - {id: rblPREV_VISA_TEN_PRINT_IND, type: yesno, label: "Have you been ten-printed?", from: us_immigration.ten_printed_ind, when: us_immigration.ever_issued_visa_ind}
+      - {id: rblPREV_VISA_LOST_IND, type: yesno, label: "Has your U.S. Visa ever been lost or stolen?", from: declarations.visa_lost_or_stolen, group: declarations.history, when: us_immigration.ever_issued_visa_ind, ask: "美国签证是否丢失/被盗过？"}
+      - {id: rblPREV_VISA_CANCELLED_IND, type: yesno, label: "Has your U.S. Visa ever been cancelled or revoked?", from: declarations.visa_cancelled_or_revoked, group: declarations.history, when: us_immigration.ever_issued_visa_ind, ask: "美国签证是否被取消/吊销过？"}
+      - {id: rblPREV_VISA_REFUSED_IND, type: yesno, label: "Ever refused a U.S. visa / refused admission / withdrew application at port of entry?", from: declarations.visa_refused_or_admission_refused, group: declarations.history, ask: "是否被拒签过、在入境口岸被拒入境或撤回过入境申请？"}
+      - {id: rblIV_PETITION_IND, type: yesno, label: "Has anyone ever filed an immigrant petition on your behalf?", from: declarations.immigrant_petition_filed, group: declarations.history, ask: "是否有人为你提交过移民申请（I-130/I-140 等，H-1B 不算）？"}
+
+  - node: AddressPhone
+    title: Address and Phone
+    fields:
+      - {id: tbxAPP_ADDR_LN1, label: "Home Street Address (Line 1)", from: contact.home.line1, check: ceac_address}
+      - {id: tbxAPP_ADDR_LN2, label: "Home Street Address (Line 2)", from: contact.home.line2, check: ceac_address, required: false}
+      - {id: tbxAPP_ADDR_CITY, label: "City", from: contact.home.city}
+      - {id: tbxAPP_ADDR_STATE, na: cbexAPP_ADDR_STATE_NA, label: "State/Province", from: contact.home.state_name}
+      - {id: tbxAPP_ADDR_POSTAL_CD, na: cbexAPP_ADDR_POSTAL_CD_NA, label: "Postal Zone/ZIP Code", from: contact.home.zip, check: us_zip}
+      - {id: ddlCountry, type: select, map: *country, label: "Country/Region", from: contact.home.country}
+      - {id: rblMailingAddrSame, type: yesno, label: "Is your Mailing Address the same as your Home Address?", from: contact.mailing_same_as_home_ind}
+      - {id: tbxAPP_HOME_TEL, label: "Primary Phone Number", from: contact.primary_phone, check: phone_digits}
+      - {id: tbxAPP_MOBILE_TEL, na: cbexAPP_MOBILE_TEL_NA, label: "Secondary Phone Number", from: contact.secondary_phone, group: contact.phones, check: phone_digits}
+      - {id: tbxAPP_BUS_TEL, na: cbexAPP_BUS_TEL_NA, label: "Work Phone Number", from: contact.work_phone, group: contact.phones, check: phone_digits, ask: "工作电话（公司总机或座机）；没有就回复“不适用”"}
+      - {id: rblAddPhone, type: yesno, label: "Other phone numbers in the last five years?", from: contact.other_phones_ind}
+      - type: list
+        label: Additional phone
+        from: contact.other_phones_5y
+        when: contact.other_phones_ind
+        item:
+          - {id: "dtlAddPhone_ctl{i:02d}_tbxAddPhoneInfo", label: "number", from: number, check: phone_digits}
+      - {id: tbxAPP_EMAIL_ADDR, label: "Email Address", from: contact.primary_email, check: email}
+      - {id: rblAddEmail, type: yesno, label: "Other email addresses in the last five years?", from: contact.other_emails_ind}
+      - type: list
+        label: Additional email
+        from: contact.other_emails_5y
+        when: contact.other_emails_ind
+        item:
+          - {id: "dtlAddEmail_ctl{i:02d}_tbxAddEmailInfo", label: "address", from: address, check: email}
+      - type: list
+        label: Social media
+        from: contact.social_media
+        ask: "过去 5 年用过的社交媒体平台和用户名（DS-160 列表：Douban/Facebook/Instagram/LinkedIn/QZone/Reddit/Sina Weibo/Tencent Weibo/Twitter/YouTube…）"
+        item:
+          - {id: "dtlSocial_ctl{i:02d}_ddlSocialMedia", type: select, label: "platform", from: platform,
+             map: {ASK.FM: ASKF, DOUBAN: DUBN, FACEBOOK: FCBK, FLICKR: FLKR, GOOGLE+: GOGL, INSTAGRAM: INST, LINKEDIN: LINK, MYSPACE: MYSP, PINTEREST: PTST, QZONE: QZNE, REDDIT: RDDT, SINA WEIBO: SWBO, TENCENT WEIBO: TWBO, TUMBLR: TUMB, TWITTER: TWIT, TWOO: TWOO, VINE: VINE, VKONTAKTE: VKON, YOUKU: YUKU, YOUTUBE: YTUB, NONE: NONE}}
+          - {id: "dtlSocial_ctl{i:02d}_tbxSocialMediaIdent", label: "identifier", from: handle}
+      - {id: rblAddSocial, type: yesno, label: "Provide information about presence on other websites/apps?", from: contact.other_websites_ind, group: contact.social}
+
+  - node: PptVisa
+    title: Passport
+    fields:
+      - {id: ddlPPT_TYPE, type: select, label: "Passport/Travel Document Type", from: identity.passports.current.type, map: {REGULAR: R, OFFICIAL: O, DIPLOMATIC: D, LAISSEZ-PASSER: L, OTHER: T}}
+      - {id: tbxPPT_NUM, label: "Passport Number", from: identity.passports.current.number, check: cn_passport}
+      - {id: tbxPPT_BOOK_NUM, na: cbexPPT_BOOK_NUM_NA, label: "Passport Book Number", from: identity.passports.current.book_number}
+      - {id: ddlPPT_ISSUED_CNTRY, type: select, map: *country, label: "Country/Authority that Issued Passport", from: identity.passports.current.issuing_country}
+      - {id: tbxPPT_ISSUED_IN_CITY, label: "Issued In City", from: identity.passports.current.issued_in.city}
+      - {id: tbxPPT_ISSUED_IN_STATE, label: "Issued In State/Province", from: identity.passports.current.issued_in.state, required: false}
+      - {id: ddlPPT_ISSUED_IN_CNTRY, type: select, map: *country, label: "Issued In Country", from: identity.passports.current.issued_in.country}
+      - {type: date, ids: [ddlPPT_ISSUED_DTEDay, ddlPPT_ISSUED_DTEMonth, tbxPPT_ISSUEDYear], day: num2, month: num2, label: "Issuance Date", from: identity.passports.current.issue_date, check: past_date}
+      - {type: date, ids: [ddlPPT_EXPIRE_DTEDay, ddlPPT_EXPIRE_DTEMonth, tbxPPT_EXPIREYear], day: num2, month: num2, label: "Expiration Date", from: identity.passports.current.expiry_date}
+      - {id: cbxPPT_EXPIRE_NA, type: checkbox, label: "No Expiration", const: false}
+      - {id: rblLOST_PPT_IND, type: yesno, label: "Have you ever lost a passport or had one stolen?", from: identity.passports.current.lost_or_stolen_ind, group: declarations.history, ask: "护照是否丢失/被盗过？"}
+
+  - node: USContact
+    title: U.S. Point of Contact
+    fields:
+      - {id: tbxUS_POC_SURNAME, label: "Contact Surnames", from: app.us_contact.surname, group: app.us_contact, check: ceac_name}
+      - {id: tbxUS_POC_GIVEN_NAME, label: "Contact Given Names", from: app.us_contact.given_names, group: app.us_contact, check: ceac_name}
+      - {id: tbxUS_POC_ORGANIZATION, label: "Organization Name", from: app.us_contact.organization, group: app.us_contact}
+      - {id: ddlUS_POC_REL_TO_APP, type: select, label: "Relationship to You", from: app.us_contact.relationship, group: app.us_contact, map: {RELATIVE: R, SPOUSE: S, FRIEND: C, BUSINESS ASSOCIATE: B, EMPLOYER: P, SCHOOL OFFICIAL: H, U.S. PETITIONER: U, OTHER: O}, ask: "美国联系人与你的关系"}
+      - {id: tbxUS_POC_ADDR_LN1, label: "Contact Address Line 1", from: app.us_contact.address.line1, group: app.us_contact, check: ceac_address}
+      - {id: tbxUS_POC_ADDR_LN2, label: "Contact Address Line 2", from: app.us_contact.address.line2, group: app.us_contact, required: false}
+      - {id: tbxUS_POC_ADDR_CITY, label: "Contact City", from: app.us_contact.address.city, group: app.us_contact}
+      - {id: ddlUS_POC_ADDR_STATE, type: select, label: "Contact State", from: app.us_contact.address.state, group: app.us_contact}
+      - {id: tbxUS_POC_ADDR_POSTAL_CD, label: "Contact ZIP", from: app.us_contact.address.zip, group: app.us_contact, check: us_zip}
+      - {id: tbxUS_POC_HOME_TEL, label: "Contact Phone", from: app.us_contact.phone, group: app.us_contact, check: phone_digits}
+      - {id: tbxUS_POC_EMAIL_ADDR, na: cbexUS_POC_EMAIL_ADDR_NA, label: "Contact Email", from: app.us_contact.email, group: app.us_contact, check: email}
+
+  - node: Relatives
+    title: Family — Relatives
+    fields:
+      - {id: tbxFATHER_SURNAME, na: cbxFATHER_SURNAME_UNK_IND, label: "Father's Surnames", from: family.father.surname, group: family.father, check: ceac_name, ask: "父亲的姓（拼音，同户口本/护照）"}
+      - {id: tbxFATHER_GIVEN_NAME, na: cbxFATHER_GIVEN_NAME_UNK_IND, label: "Father's Given Names", from: family.father.given_names, group: family.father, check: ceac_name, ask: "父亲的名（拼音）"}
+      - {type: date, ids: [ddlFathersDOBDay, ddlFathersDOBMonth, tbxFathersDOBYear], day: num2, month: MMM, label: "Father's Date of Birth", from: family.father.date_of_birth, group: family.father, check: past_date, ask: "父亲出生日期 YYYY-MM-DD"}
+      - {id: rblFATHER_LIVE_IN_US_IND, type: yesno, label: "Is your father in the U.S.?", from: family.father.in_us_ind, group: family.father, ask: "父亲目前是否在美国？"}
+      - {id: tbxMOTHER_SURNAME, na: cbxMOTHER_SURNAME_UNK_IND, label: "Mother's Surnames", from: family.mother.surname, group: family.mother, check: ceac_name, ask: "母亲的姓（拼音）"}
+      - {id: tbxMOTHER_GIVEN_NAME, na: cbxMOTHER_GIVEN_NAME_UNK_IND, label: "Mother's Given Names", from: family.mother.given_names, group: family.mother, check: ceac_name, ask: "母亲的名（拼音）"}
+      - {type: date, ids: [ddlMothersDOBDay, ddlMothersDOBMonth, tbxMothersDOBYear], day: num2, month: MMM, label: "Mother's Date of Birth", from: family.mother.date_of_birth, group: family.mother, check: past_date, ask: "母亲出生日期 YYYY-MM-DD"}
+      - {id: rblMOTHER_LIVE_IN_US_IND, type: yesno, label: "Is your mother in the U.S.?", from: family.mother.in_us_ind, group: family.mother, ask: "母亲目前是否在美国？"}
+      - {id: rblUS_IMMED_RELATIVE_IND, type: yesno, label: "Immediate relatives in the U.S. (not parents)?", from: family.us_immediate_relatives_ind, ask: "在美国有没有直系亲属（配偶/未婚夫妻/子女/兄弟姐妹）？有的话给姓名、关系、身份"}
+      - {id: rblUS_OTHER_RELATIVE_IND, type: yesno, label: "Any other relatives in the U.S.?", from: family.us_other_relatives_ind, ask: "在美国有没有其他亲戚？"}
+
+  # ── not yet opened live: ids are placeholders (replace from the first snapshot) ──────────
+  - node: WorkEducation1
+    title: Work / Education — Present
+    ids_verified: false
+    fields:
+      - {id: TBD_PRIMARY_OCCUPATION, type: select, label: "Primary Occupation", from: employment.current.ds160_occupation}
+      - {id: TBD_EMP_SCH_NAME, label: "Present Employer Name", from: employment.current.employer, check: ceac_address}
+      - {id: TBD_EMP_SCH_ADDR1, label: "Employer Address Line 1", from: employment.current.address.line1, check: ceac_address}
+      - {id: TBD_EMP_SCH_CITY, label: "Employer City", from: employment.current.address.city}
+      - {id: TBD_EMP_SCH_STATE, label: "Employer State", from: employment.current.address.state}
+      - {id: TBD_EMP_SCH_POSTAL_CD, label: "Employer ZIP", from: employment.current.address.zip, check: us_zip}
+      - {id: TBD_EMP_SCH_TEL, label: "Employer Phone", from: employment.current.phone, check: phone_digits, ask: "雇主电话（DS-160 必填，可用公司总机）"}
+      - {type: date, ids: [TBD_EMP_START_DAY, TBD_EMP_START_MONTH, TBD_EMP_START_YEAR], label: "Start Date", from: employment.current.start}
+      - {id: TBD_CURR_MONTHLY_SALARY, label: "Monthly Income in Local Currency", from: employment.current.monthly_income_usd, ask: "当前月收入（当地货币，税前）"}
+      - {id: TBD_DESCRIBE_DUTIES, label: "Briefly describe your duties", from: employment.current.duties_ds160}
+
+  - node: WorkEducation2
+    title: Work / Education — Previous
+    ids_verified: false
+    fields:
+      - {id: TBD_PREV_EMPL_IND, type: yesno, label: "Were you previously employed?", from: employment.previous_ind}
+      - {id: TBD_PREV_EMPLOYERS, label: "Previous employers (last 5 years)", from: employment.previous_ds160, ask: "过去 5 年每个雇主（含实习）的地址、电话、职位、起止日期、主管姓名、职责"}
+      - {id: TBD_OTHER_EDUC_IND, type: yesno, label: "Attended any educational institutions at secondary level or above?", from: education.attended_ind}
+      - {id: TBD_SCHOOLS, label: "Schools", from: education.schools}
+
+  - node: WorkEducation3
+    title: Work / Education — Additional
+    ids_verified: false
+    fields:
+      - {id: TBD_CLAN_TRIBE_IND, type: yesno, label: "Belong to a clan or tribe?", from: declarations.clan_or_tribe, group: declarations.background}
+      - {id: TBD_LANGUAGES, label: "Languages you speak", from: contact.languages, ask: "你会说的语言（例：CHINESE, ENGLISH）"}
+      - {id: TBD_COUNTRIES_VISITED_IND, type: yesno, label: "Traveled to any countries in the last five years?", from: travel.countries_visited_5y_ind}
+      - {id: TBD_COUNTRIES_VISITED, label: "Countries visited (last 5 years)", from: travel.countries_visited_5y, ask: "过去 5 年去过的国家/地区（除美国）"}
+      - {id: TBD_ORGANIZATION_IND, type: yesno, label: "Belonged to/worked for any professional, social or charitable organization?", from: declarations.organizations, group: declarations.background}
+      - {id: TBD_SPECIALIZED_SKILLS_IND, type: yesno, label: "Specialized skills (firearms, explosives, nuclear, biological, chemical)?", from: declarations.specialized_skills, group: declarations.background}
+      - {id: TBD_MILITARY_SERVICE_IND, type: yesno, label: "Ever served in the military?", from: declarations.military_service, ask: "是否服过兵役？（大学军训不算）"}
+      - {id: TBD_INSURGENT_ORG_IND, type: yesno, label: "Served in a paramilitary/insurgent organization?", from: declarations.insurgent_org, group: declarations.background}
+
+  - node: SecurityandBackground
+    title: Security and Background (parts 1-5)
+    ids_verified: false
+    fields:
+      - {id: TBD_SEC_DISEASE, type: yesno, label: "Communicable disease / mental disorder / drug abuse (parts 1)", from: declarations.security.health, group: declarations.security, ask: "安全背景问题（传染病、犯罪记录、毒品、恐怖活动、移民欺诈、逾期滞留等约 25 题）——如果全部为“否”，回复“安全问题全部 No”即可"}
+      - {id: TBD_SEC_CRIMINAL, type: yesno, label: "Arrests / convictions / controlled substances / prostitution / money laundering / trafficking (part 2)", from: declarations.security.criminal, group: declarations.security}
+      - {id: TBD_SEC_SECURITY, type: yesno, label: "Espionage / terrorism / genocide / torture / child soldiers etc. (part 3)", from: declarations.security.security, group: declarations.security}
+      - {id: TBD_SEC_IMMIGRATION, type: yesno, label: "Immigration fraud / removal / overstay / unlawful presence (part 4)", from: declarations.security.immigration, group: declarations.security}
+      - {id: TBD_SEC_OTHER, type: yesno, label: "Child custody / voting violation / renounced citizenship for tax (part 5)", from: declarations.security.other, group: declarations.security}
+
+  - node: TempWork
+    title: Temporary Work Visa (H)
+    ids_verified: false
+    fields:
+      - {id: TBD_PETITIONER_NAME, label: "Name of person/company filing petition", from: employment.current.employer}
+      - {id: TBD_PETITIONER_ADDR, label: "Petitioner address", from: employment.current.address.line1}
+      - {id: TBD_PETITIONER_TEL, label: "Petitioner phone", from: employment.current.phone, check: phone_digits}
+      - {id: TBD_WORK_ADDR, label: "Address where you will work", from: employment.current.worksite_line1, ask: "H-1B 工作地点地址（与 LCA/I-129 一致）"}
+      - {id: TBD_MONTHLY_INCOME, label: "Monthly income (USD)", from: employment.current.monthly_income_usd}

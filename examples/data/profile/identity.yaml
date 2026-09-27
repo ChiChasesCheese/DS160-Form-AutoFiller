@@ -1,0 +1,43 @@
+_meta:
+  confidence: medium
+  source: "raw/passport.pdf#p1"
+name:
+  surname: {value: LI, confidence: verified, source: "raw/passport.pdf#p1"}
+  given_names: {value: MING, confidence: verified, source: "raw/passport.pdf#p1"}
+  full_name_native: {value: 李明, confidence: verified, source: "raw/passport.pdf#p1"}
+  native_surname: 李
+  native_given: 明
+  telecode_ind: {value: Y, confidence: high, source: "derived:standard Chinese commercial code table"}
+  telecode_surname: {value: "2621", confidence: high, source: "derived:standard Chinese commercial code table"}
+  telecode_given: {value: "2494", confidence: high, source: "derived:standard Chinese commercial code table"}
+  other_names_used_ind: {value: N, confidence: user, source: "user:2026-01-01"}
+sex: {value: M, confidence: verified, source: "raw/passport.pdf#p1"}
+date_of_birth: {value: 1990-03-07, confidence: verified, source: "raw/passport.pdf#p1"}
+place_of_birth:
+  city: BEIJING
+  province: BEIJING
+  country: CHINA
+nationality: CHINA
+other_nationality_ind: {value: N, confidence: user, source: "user:2026-01-01"}
+permanent_resident_other_ind: {value: N, confidence: user, source: "user:2026-01-01"}
+marital_status: SINGLE
+prc_national_id:
+  number: {value: "110105199003071239", confidence: high, source: "raw/id-card.jpg"}
+us_ids:
+  ssn: {value: __NA__, confidence: user, source: "user:2026-01-01"}
+  taxpayer_id: {value: __NA__, confidence: user, source: "user:2026-01-01"}
+  driver_license_ind: {value: N, confidence: user, source: "user:2026-01-01"}
+passports:
+  current:
+    type: REGULAR
+    number: {value: E12345678, confidence: verified, source: "raw/passport.pdf#p1"}
+    book_number: {value: __NA__, confidence: high, source: "derived:PRC passports have no book number"}
+    issuing_country: CHINA
+    issued_in: {city: BEIJING, state: BEIJING, country: CHINA}
+    issue_date: 2023-02-15
+    expiry_date: 2033-02-14
+    mrz:
+      value: ["POCHNLI<<MING<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", "E123456782CHN9003071M3302141<<<<<<<<<<<<<<00"]
+      confidence: medium
+      source: "raw/passport.pdf#p1"
+    lost_or_stolen_ind: {value: N, confidence: assumed, source: "derived:agent default"}

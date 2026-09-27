@@ -1,0 +1,4 @@
+form: ds160
+app_id: DEMO0000001
+_meta: {confidence: user, source: "user:2026-01-01"}
+purpose: {category: H, visa_class: H1B-H1B}

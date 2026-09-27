@@ -1,0 +1,183 @@
+"""Tests run against the synthetic applicant in examples/ (never against real data)."""
+
+from __future__ import annotations
+
+import datetime as dt
+import shutil
+from pathlib import Path
+
+import pytest
+import yaml
+
+from backhome import docs, forms
+from backhome.cli import FORMS_DIR
+from backhome.model import Confidence, Profile
+from backhome.validators import check_profile, mrz_check_digit, parse_mrz_line2, run
+
+ROOT = Path(__file__).resolve().parents[1]
+EXAMPLE = ROOT / "examples" / "data"
+SPEC = FORMS_DIR / "ds160" / "spec.yaml"
+
+
+@pytest.fixture
+def home(tmp_path: Path) -> Path:
+    shutil.copytree(EXAMPLE, tmp_path / "data")
+    return tmp_path
+
+
+@pytest.fixture
+def profile(home: Path) -> Profile:
+    return Profile(home / "data" / "profile").mount("app", home / "data/applications/DEMO0000001/application.yaml")
+
+
+def _edit(home: Path, rel: str, fn) -> None:
+    p = home / "data" / "profile" / rel
+    d = yaml.safe_load(p.read_text())
+    fn(d)
+    p.write_text(yaml.safe_dump(d, allow_unicode=True))
+
+
+# ── validators ──────────────────────────────────────────────────────────
+@pytest.mark.parametrize("name,value,ok", [
+    ("prc_id", "110105199003071239", True),
+    ("prc_id", "110105199003071238", False),       # bad checksum
+    ("prc_id", "11010519900307123", False),        # too short
+    ("cn_passport", "EA1234567", True),
+    ("cn_passport", "E12345678", True),
+    ("cn_passport", "12345678", False),
+    ("us_visa_foil", "A1234567", True),
+    ("uscis_receipt", "IOE0123456789", True),
+    ("uscis_receipt", "IOE012345678", False),
+    ("ssn", "123-45-6789", True),
+    ("ssn", "666-12-3456", False),
+    ("i94", "123456789A1", True),
+    ("us_zip", "95134", True),
+    ("us_zip", "9513", False),
+    ("ceac_name", "MARY-ANN O'NEIL", True),
+    ("ceac_name", "Li", False),                    # CEAC wants upper case
+    ("ceac_address", "100 MAIN ST APT 2", True),
+    ("ceac_address", "X" * 41, False),             # CEAC max 40
+    ("telecode", "2621", True),
+    ("past_date", dt.date(2999, 1, 1), False),
+])
+def test_field_validators(name, value, ok):
+    assert (run(name, value) is None) is ok
+
+
+def test_mrz_roundtrip():
+    line = "E123456782CHN9003071M3302141<<<<<<<<<<<<<<00"
+    m = parse_mrz_line2(line)
+    assert m["errors"] == [] and m["number"] == "E12345678" and m["dob"] == "900307"
+    assert parse_mrz_line2(line[:9] + "9" + line[10:])["errors"]  # corrupted check digit is caught
+    assert mrz_check_digit("<" * 14) == "0"
+
+
+def test_example_profile_is_clean(profile):
+    assert [i for i in check_profile(profile) if i.level == "error"] == []
+
+
+def test_cross_field_checks_catch_inconsistency(home):
+    _edit(home, "identity.yaml", lambda d: d.__setitem__("date_of_birth", {"value": "1991-03-07", "confidence": "high", "source": "raw/x.pdf"}))
+    errors = [str(i) for i in check_profile(Profile(home / "data/profile")) if i.level == "error"]
+    assert any("embedded birth date" in e for e in errors)   # PRC ID digits disagree
+    assert any("MRZ birth date" in e for e in errors)         # MRZ disagrees
+
+
+def test_telecode_count_mismatch(home):
+    _edit(home, "identity.yaml", lambda d: d["name"].__setitem__("telecode_given", {"value": "24942494", "confidence": "high", "source": "derived:x"}))
+    assert any("telecode_given" in i.path for i in check_profile(Profile(home / "data/profile")) if i.level == "error")
+
+
+# ── model ───────────────────────────────────────────────────────────────
+def test_fact_provenance(profile):
+    f = profile.get("identity.passports.current.number")
+    assert (f.value, f.confidence, f.source) == ("E12345678", Confidence.VERIFIED, "raw/passport.pdf#p1")
+    plain = profile.get("identity.place_of_birth.city")  # plain scalar inherits _meta
+    assert plain.confidence == Confidence.MEDIUM and plain.source == "raw/passport.pdf#p1"
+    assert profile.get("identity.passports.current.mrz[1]").confidence == Confidence.MEDIUM  # inherited into list
+    assert profile.get("nope.nothing") is None
+
+
+def test_answers_overlay_wins_and_persists(home):
+    p = Profile(home / "data/profile")
+    p.answer("family.father.surname", "LI", source="user:2026-09-27")
+    again = Profile(home / "data/profile")
+    f = again.get("family.father.surname")
+    assert (f.value, f.confidence, f.source) == ("LI", Confidence.USER, "user:2026-09-27")
+    with pytest.raises(ValueError):
+        again.answer("family.father.surname", "LI", source="my memory")  # not a valid source reference
+
+
+# ── forms: sheet / recon / questionnaire ────────────────────────────────
+def test_spec_loads_and_ids_are_unique():
+    spec = forms.load_spec(SPEC)
+    assert spec["pages"][0]["node"] == "Personal1"
+
+
+def test_sheet_formats(profile):
+    cells = {(c.page, c.id): c for c in forms.build_sheet(forms.load_spec(SPEC), profile)}
+    assert cells[("Personal1", "ddlDOBDay")].expected == "07"          # num2
+    assert cells[("Personal1", "ddlDOBMonth")].expected == "MAR"       # MMM
+    assert cells[("Personal1", "ddlAPP_POB_CNTRY")].expected == "CHIN"  # mapped select
+    assert cells[("Personal1", "rblTelecodeQuestion")].expected == "Y"
+    assert cells[("Personal2", "cbexAPP_SSN_NA")].expected == "1"       # Does Not Apply ticked
+    assert cells[("Personal2", "tbxAPP_SSN1")].expected == ""
+    assert cells[("PptVisa", "ddlPPT_ISSUED_DTEMonth")].expected == "02"
+    assert cells[("Relatives", "tbxFATHER_SURNAME")].blocking            # unknown stays unknown
+    assert cells[("Relatives", "tbxMOTHER_SURNAME")].expected == "WANG"
+
+
+def test_recon_statuses(profile):
+    spec = forms.load_spec(SPEC)
+    cells = forms.build_sheet(spec, profile)
+    snaps = forms.load_snapshots(EXAMPLE / "applications/DEMO0000001/snapshots")
+    by = {(r.page, r.id): r.status for r in forms.recon(cells, snaps)}
+    assert by[("Personal1", "tbxAPP_SURNAME")] == "match"
+    assert by[("Personal1", "tbxAPP_POB_CITY")] == "mismatch"   # BEIJNG typo in the snapshot
+    assert by[("Personal2", "ddlAPP_NATL")] == "not-captured"
+    assert by[("Relatives", "tbxFATHER_SURNAME")] == "blocked"
+
+
+def test_questionnaire_groups_and_orders(profile):
+    spec = forms.load_spec(SPEC)
+    qs = forms.questionnaire(forms.build_sheet(spec, profile), spec["groups"])
+    father = next(q for q in qs if q.path == "family.father")
+    assert father.kind == "missing" and len(father.items) == 4       # 4 inputs -> 1 question
+    kinds = [q.kind for q in qs]
+    assert kinds == sorted(kinds, key=lambda k: k != "missing")       # missing before confirm
+    history = next(q for q in qs if q.path == "declarations.history")
+    assert history.kind == "missing"  # one unknown member makes the whole group blocking
+    assert any("lost a passport" in it and it.endswith(": N") for it in history.items)  # assumed member shown
+
+
+def test_overview_masks_sensitive(profile):
+    spec = forms.load_spec(SPEC)
+    cells = forms.build_sheet(spec, profile)
+    md = forms.overview(spec, cells, forms.recon(cells, {}), [], "DEMO")
+    assert "110105199003071239" not in md and "11••••••••••••••39" in md
+
+
+# ── docs: ingest / verify / digest ──────────────────────────────────────
+def test_ingest_idempotent_and_tamper_evident(tmp_path):
+    src = tmp_path / "src"
+    (src / "ID").mkdir(parents=True)
+    (src / "ID" / "a.txt").write_text("passport E12345678")
+    raw = tmp_path / "raw"
+    assert docs.ingest([src], raw)["copied"] == 1
+    assert docs.ingest([src], raw)["unchanged"] == 1
+    (src / "ID" / "a.txt").write_text("changed upstream")
+    assert docs.ingest([src], raw)["conflict"] == 1          # kept side by side, never overwritten
+    (raw / "inbox" / "hukou.txt").write_text("father: LI GANG")
+    assert docs.ingest([], raw)["registered"] == 1           # user drop picked up
+    assert docs.verify(raw) == []
+    (raw / "ID" / "a.txt").write_text("tampered")
+    assert docs.verify(raw) == ["modified: ID/a.txt"]
+
+
+def test_digest_text(tmp_path):
+    raw = tmp_path / "raw"
+    (raw / "inbox").mkdir(parents=True)
+    (raw / "inbox" / "note.txt").write_text("mother: WANG FANG 1965-01-02")
+    index = docs.digest(raw, tmp_path / "digest")
+    assert index[0]["status"] == "text"
+    assert "WANG FANG" in (tmp_path / "digest" / "inbox" / "note.txt.txt").read_text()
