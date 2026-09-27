@@ -1,17 +1,40 @@
 [project]
-name = "backhome"
-version = "0.1.0"
-description = "Agent-native immigration paperwork: raw docs -> sourced facts -> form sheet -> browser fill -> recon"
+name = "ds160-autofiller"
+version = "0.2.0"
+description = "Agent-native DS-160 autofill: your documents -> sourced facts -> form sheet -> browser fill -> recon -> printable review"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
+authors = [{ name = "Chi Zhang" }]
+keywords = ["ds-160", "visa", "ceac", "immigration", "autofill", "claude", "agent", "h-1b"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Office/Business",
+]
 dependencies = ["pyyaml>=6.0", "pypdf[crypto]>=5.0"]
+
+[project.optional-dependencies]
+photo = ["pillow>=10.0"]
+
+[project.urls]
+Homepage = "https://github.com/ChiChasesCheese/DS160-Form-AutoFiller"
+Issues = "https://github.com/ChiChasesCheese/DS160-Form-AutoFiller/issues"
+Changelog = "https://github.com/ChiChasesCheese/DS160-Form-AutoFiller/blob/main/CHANGELOG.md"
 
 [project.scripts]
 backhome = "backhome.cli:main"
+ds160 = "backhome.cli:main"
 
 [dependency-groups]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "ruff>=0.6"]
 
 [build-system]
 requires = ["hatchling"]
@@ -20,5 +43,16 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/backhome"]
 
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "examples", "skills", "README*.md", "CHANGELOG.md", "LICENSE"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501", "E702", "B905"]  # long lines in spec-like code; `a; b` argparse one-liners; zip strictness

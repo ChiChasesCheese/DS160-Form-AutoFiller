@@ -36,6 +36,15 @@ OVERVIEW.md, QUESTIONNAIRE.md). Spec: `src/backhome/forms/ds160/spec.yaml`.
 7. For pages marked `ids_verified: false` in the spec, snapshot the page first, replace `TBD_*` ids with the
    real ones (keep the `from:` mapping), and commit the spec change — that is how the spec learns.
 
+## Photo (optional, only when the user asks)
+1. Look at the image (Read tool), note three y pixel rows in the source: top of hair, eye line, bottom of chin.
+2. `uv run backhome photo <img> --hair Y --eyes Y --chin Y --out data/photo/ds160.jpg` → must print "compliant".
+3. CEAC "Upload Your Photo" redirects to identix.state.gov: the user must allow that site in the extension.
+   Use `file_upload` on the file input (never click it), then accept the tool's result page only if it passes.
+
+## Finish
+`uv run backhome run <APP>` → give the user `review.pdf` and the verdict line. Review and Sign stay with the user.
+
 ## CEAC quirks (learned the hard way)
 - `element.click()` on Save/Next is ignored → always a real `computer.left_click`.
 - "Add Another" links and many Yes/No radios `__doPostBack`; values typed before a postback survive it.

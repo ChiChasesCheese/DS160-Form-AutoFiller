@@ -20,15 +20,16 @@ from __future__ import annotations
 
 import datetime as dt
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 import yaml
 
 
-class Confidence(str, Enum):
+class Confidence(StrEnum):
     VERIFIED = "verified"  # official document AND independently confirmed (2nd doc, CEAC echo, user)
     HIGH = "high"  # text-extracted from an official document
     MEDIUM = "medium"  # visual/OCR read, or computed from documents
@@ -101,7 +102,7 @@ class Profile:
         answers = self.root / ANSWERS_FILE
         self.answers: dict[str, dict] = (yaml.safe_load(answers.read_text()) or {}) if answers.exists() else {}
 
-    def mount(self, ns: str, path: Path) -> "Profile":
+    def mount(self, ns: str, path: Path) -> Profile:
         """Attach an extra YAML file as namespace `ns` (e.g. an application's own facts as `app`)."""
         data = yaml.safe_load(Path(path).read_text()) or {}
         self.meta[ns] = data.pop("_meta", {})
@@ -187,8 +188,14 @@ class Profile:
             yield path, self._fact(node, None)
 
     # ── mutation (answers overlay only; profile files are edited by humans/agents) ──
-    def answer(self, path: str, value: Any, source: str | None = None,
-               confidence: Confidence = Confidence.USER, note: str | None = None) -> Fact:
+    def answer(
+        self,
+        path: str,
+        value: Any,
+        source: str | None = None,
+        confidence: Confidence = Confidence.USER,
+        note: str | None = None,
+    ) -> Fact:
         src = source or f"user:{dt.date.today().isoformat()}"
         if not SOURCE_RE.match(src):
             raise ValueError(f"bad source reference: {src!r}")

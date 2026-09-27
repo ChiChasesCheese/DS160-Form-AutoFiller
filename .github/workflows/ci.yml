@@ -1,0 +1,33 @@
+name: ci
+on:
+  push: {branches: [main]}
+  pull_request:
+permissions: {contents: read}
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: {python: ["3.11", "3.12", "3.13"]}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with: {python-version: "${{ matrix.python }}"}
+      - run: uv sync --all-extras
+      - run: uv run ruff check src tests
+      - run: uv run ruff format --check src tests
+      - run: uv run pytest -q
+      - name: pipeline on the synthetic applicant
+        run: |
+          BACKHOME_HOME=examples uv run backhome validate
+          BACKHOME_HOME=examples uv run backhome run DEMO0000001 --no-pdf
+      - name: guard — no personal data directories are tracked
+        run: "! git ls-files | grep -E '^(raw|data)/'"
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv build
+      - uses: actions/upload-artifact@v4
+        with: {name: dist, path: dist/}

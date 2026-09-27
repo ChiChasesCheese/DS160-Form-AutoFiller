@@ -6,13 +6,16 @@ Personal immigration paperwork as an engineering pipeline:
 ## Commands (run from repo root)
 ```bash
 uv sync                                   # install (Python ≥3.11)
-uv run pytest -q                          # 33 tests, synthetic data only (examples/)
+uv run pytest -q                          # 36 tests, synthetic data only (examples/)
 uv run backhome ingest <src>...           # copy docs into raw/ (+MANIFEST.tsv); idempotent
 uv run backhome verify-raw                # raw/ untouched? (sha256)
 uv run backhome digest [--ocr]            # data/digest/*.txt + INDEX.tsv (needs-vision = read it yourself)
 uv run backhome validate [--all]          # 0 errors required; --all lists facts needing review
 uv run backhome recon <APP_ID>            # sheet.tsv, recon.tsv, OVERVIEW.md, QUESTIONNAIRE.md
 uv run backhome answer <path> <value> [--typed] [--source user:YYYY-MM-DD]
+uv run backhome run <APP_ID>              # whole pipeline incl. review.html/.pdf (`ds160` is an alias)
+uv run backhome photo IMG --hair Y --eyes Y --chin Y   # DS-160 photo; landmarks = y pixels you read off the image
+make lint test demo                       # what CI runs
 BACKHOME_HOME=examples uv run backhome recon DEMO0000001   # demo on the fake applicant
 ```
 
@@ -21,6 +24,9 @@ BACKHOME_HOME=examples uv run backhome recon DEMO0000001   # demo on the fake ap
 - `src/backhome/validators.py` — named field validators (spec `check:`) + `check_profile` cross-field checks
 - `src/backhome/forms.py` — spec → `Cell`s (sheet), `recon`, `questionnaire`, `overview`
 - `src/backhome/forms/ds160/spec.yaml` — CEAC element ids per page; `ids_verified: false` pages still have `TBD_*` ids
+- `src/backhome/review.py` — final-review HTML (print-first, visa-foil styling) + PDF via headless Chrome
+- `src/backhome/photo.py` — DS-160 photo geometry (head 50–69%, eyes 56–69% from bottom), ≤240 kB encode
+- `src/backhome/pipeline.py` — `run`: stage gates and reports
 - `src/backhome/ceac/snapshot.js`, `nav.js` — run in the CEAC page via Claude in Chrome
 - `skills/` — `ds160-autofill` (the fill loop), `immigration-intake` (docs → facts). Read before doing either.
 - `raw/`, `data/` — **personal, gitignored**. `examples/data/` — synthetic twin used by tests.

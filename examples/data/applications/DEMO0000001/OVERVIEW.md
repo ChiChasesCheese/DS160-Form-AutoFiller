@@ -1,12 +1,12 @@
 # DS160 DEMO0000001 — overview
 
-_Generated 2026-09-27 03:00 by `backhome overview`. Never edit by hand; regenerate._
+_Generated 2026-09-27 03:16 by `backhome overview`. Never edit by hand; regenerate._
 
 Legend: ✅ CEAC matches sheet · ❌ mismatch · ⚠️ field absent on live page · ⛔ value unknown (see questionnaire) · · page not captured yet. Confidence: verified > high > medium ≈ user > low > assumed.
 
 | # | Section | Status | Fields | ✅ | ❌ | ⛔ | needs review |
 |---|---|---|---|---|---|---|---|
-| 1 | Personal Information 1 | ❌ fix | 17 | 16 | 1 | 0 | 0 |
+| 1 | Personal Information 1 | ✅ done | 17 | 17 | 0 | 0 | 0 |
 | 2 | Personal Information 2 | · todo | 11 | 0 | 0 | 0 | 0 |
 | 3 | Travel Information | ⛔ blocked | 14 | 0 | 0 | 12 | 0 |
 | 4 | Travel Companions | ⛔ blocked | 1 | 0 | 0 | 1 | 0 |
@@ -39,7 +39,7 @@ Legend: ✅ CEAC matches sheet · ❌ mismatch · ⚠️ field absent on live pa
 | ✅ | Sex | M | verified | `raw/passport.pdf#p1` |
 | ✅ | Marital Status | SINGLE | medium | `raw/passport.pdf#p1` |
 | ✅ | Date of Birth | 1990-03-07 | verified | `raw/passport.pdf#p1` |
-| ❌ | City of Birth | BEIJING (CEAC has `BEIJNG`) | medium | `raw/passport.pdf#p1` |
+| ✅ | City of Birth | BEIJING | medium | `raw/passport.pdf#p1` |
 | ✅ | State/Province of Birth | BEIJING | medium | `raw/passport.pdf#p1` |
 | ✅ | Country/Region of Birth | CHINA | medium | `raw/passport.pdf#p1` |
 

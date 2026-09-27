@@ -21,9 +21,10 @@ from __future__ import annotations
 import csv
 import datetime as dt
 import re
+from collections.abc import Iterator
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 import yaml
 
@@ -159,8 +160,14 @@ def _cells(node: str, f: dict, p: Profile, ctx: dict | None) -> Iterator[Cell]:
         yield from _list_cells(node, f, p)
         return
     fact = _resolve(f, p, ctx)
-    base = dict(page=node, label=f.get("label", ""), ask=f.get("ask", ""), path=f.get("from", ""),
-                sensitive=bool(f.get("sensitive")), group=f.get("group", ""))
+    base = dict(
+        page=node,
+        label=f.get("label", ""),
+        ask=f.get("ask", ""),
+        path=f.get("from", ""),
+        sensitive=bool(f.get("sensitive")),
+        group=f.get("group", ""),
+    )
     idx = ctx["i"] if ctx else 0
     fid = lambda s: s.format(i=idx)  # noqa: E731
     if fact is not None:
@@ -199,8 +206,13 @@ def _cells(node: str, f: dict, p: Profile, ctx: dict | None) -> Iterator[Cell]:
             yield Cell(id=fid(f["id"]), expected=None, **base)
             return
         yield Cell(id=fid(f["na"]), expected="1" if is_na else "0", human="Does Not Apply" if is_na else "", **base)
-        yield Cell(id=fid(f["id"]), expected="" if is_na else _to_ceac(f, value), human="" if is_na else str(value),
-                   error="" if is_na else _check(f, value), **base)
+        yield Cell(
+            id=fid(f["id"]),
+            expected="" if is_na else _to_ceac(f, value),
+            human="" if is_na else str(value),
+            error="" if is_na else _check(f, value),
+            **base,
+        )
         return
 
     if value is None:
@@ -213,8 +225,14 @@ def _list_cells(node: str, f: dict, p: Profile) -> Iterator[Cell]:
     fact = p.get(f["from"])
     items = (fact.value if fact and fact.known else None) or []
     if fact is None or not fact.known:
-        yield Cell(page=node, id=f["item"][0]["id"].format(i=0), label=f.get("label", ""), expected=None,
-                   ask=f.get("ask", ""), path=f["from"])
+        yield Cell(
+            page=node,
+            id=f["item"][0]["id"].format(i=0),
+            label=f.get("label", ""),
+            expected=None,
+            ask=f.get("ask", ""),
+            path=f["from"],
+        )
         return
     for i, _ in enumerate(items[: f.get("max", 99)]):
         item_fact = p.get(f"{f['from']}[{i}]")  # honours item-level answers overlay
@@ -346,9 +364,14 @@ def questionnaire(cells: list[Cell], groups: dict[str, str] | None = None) -> li
         key = c.group or c.path or f"{c.page}.{c.id}"
         q = by_key.get(key)
         if q is None:
-            q = by_key[key] = Question(qid="", path=c.path or key, prompt=groups.get(key) or c.ask or c.label or c.id,
-                                       kind="missing" if c.blocking else "confirm",
-                                       confidence=c.confidence, source=c.source)
+            q = by_key[key] = Question(
+                qid="",
+                path=c.path or key,
+                prompt=groups.get(key) or c.ask or c.label or c.id,
+                kind="missing" if c.blocking else "confirm",
+                confidence=c.confidence,
+                source=c.source,
+            )
         if c.blocking:
             q.kind = "missing"
         if c.page not in q.pages:
@@ -398,13 +421,19 @@ def overview(spec: dict, cells: list[Cell], rows: list[ReconRow], qs: list[Quest
     by_page: dict[str, list[tuple[Cell, ReconRow]]] = {}
     for c, r in zip(cells, rows):
         by_page.setdefault(c.page, []).append((c, r))
-    extra = [r for r in rows[len(cells):]]
+    extra = [r for r in rows[len(cells) :]]
     now = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
-    out = [f"# {spec['form'].upper()} {app_id} — overview", "",
-           f"_Generated {now} by `backhome overview`. Never edit by hand; regenerate._", "",
-           "Legend: ✅ CEAC matches sheet · ❌ mismatch · ⚠️ field absent on live page · ⛔ value unknown (see questionnaire) · "
-           "· page not captured yet. Confidence: verified > high > medium ≈ user > low > assumed.", "",
-           "| # | Section | Status | Fields | ✅ | ❌ | ⛔ | needs review |", "|---|---|---|---|---|---|---|---|"]
+    out = [
+        f"# {spec['form'].upper()} {app_id} — overview",
+        "",
+        f"_Generated {now} by `backhome overview`. Never edit by hand; regenerate._",
+        "",
+        "Legend: ✅ CEAC matches sheet · ❌ mismatch · ⚠️ field absent on live page · ⛔ value unknown (see questionnaire) · "
+        "· page not captured yet. Confidence: verified > high > medium ≈ user > low > assumed.",
+        "",
+        "| # | Section | Status | Fields | ✅ | ❌ | ⛔ | needs review |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
     for n, page in enumerate(spec["pages"], 1):
         pairs = by_page.get(page["node"], [])
         if not pairs:
@@ -412,16 +441,28 @@ def overview(spec: dict, cells: list[Cell], rows: list[ReconRow], qs: list[Quest
         st = [r.status for _, r in pairs]
         review = sum(c.needs_review for c, _ in pairs)
         done = all(s == "match" for s in st)
-        status = "✅ done" if done and not review else "🟡 done, review" if done else (
-            "⛔ blocked" if "blocked" in st else "❌ fix" if "mismatch" in st or "missing" in st else "· todo")
-        out.append(f"| {n} | {page['title']} | {status} | {len(pairs)} | {st.count('match')} | "
-                   f"{st.count('mismatch') + st.count('missing')} | {st.count('blocked')} | {review} |")
+        status = (
+            "✅ done"
+            if done and not review
+            else "🟡 done, review"
+            if done
+            else ("⛔ blocked" if "blocked" in st else "❌ fix" if "mismatch" in st or "missing" in st else "· todo")
+        )
+        out.append(
+            f"| {n} | {page['title']} | {status} | {len(pairs)} | {st.count('match')} | "
+            f"{st.count('mismatch') + st.count('missing')} | {st.count('blocked')} | {review} |"
+        )
     for page in spec["pages"]:
         pairs = by_page.get(page["node"], [])
         if not pairs:
             continue
-        out += ["", f"## {page['title']}  (`{page['node']}`)", "",
-                "| | Field | Value | Confidence | Source of truth |", "|---|---|---|---|---|"]
+        out += [
+            "",
+            f"## {page['title']}  (`{page['node']}`)",
+            "",
+            "| | Field | Value | Confidence | Source of truth |",
+            "|---|---|---|---|---|",
+        ]
         for c, status, rs in _logical(pairs):
             val = "⛔ unknown" if c.blocking else _mask(c, c.human or c.expected or "")
             for r in rs:
@@ -439,16 +480,25 @@ def overview(spec: dict, cells: list[Cell], rows: list[ReconRow], qs: list[Quest
 
 
 def questionnaire_md(qs: list[Question], app_id: str) -> str:
-    lines = [f"# Questionnaire — {app_id}", "",
-             "Answer any way you like; the agent persists each answer with its source:", "",
-             "1. **Reply in chat** — e.g. `Q1: ZHANG WEI, 1970-03-12, No`",
-             "2. **Drop a document** into `raw/inbox/` (户口本, birth certificate, old passport, …) and say so",
-             "3. **CLI** — `backhome answer <path> <value>`", "",
-             "`missing` = the form cannot proceed without it. `confirm` = the agent filled a default; say *ok* or correct it.", ""]
+    lines = [
+        f"# Questionnaire — {app_id}",
+        "",
+        "Answer any way you like; the agent persists each answer with its source:",
+        "",
+        "1. **Reply in chat** — e.g. `Q1: ZHANG WEI, 1970-03-12, No`",
+        "2. **Drop a document** into `raw/inbox/` (户口本, birth certificate, old passport, …) and say so",
+        "3. **CLI** — `backhome answer <path> <value>`",
+        "",
+        "`missing` = the form cannot proceed without it. `confirm` = the agent filled a default; say *ok* or correct it.",
+        "",
+    ]
     for q in qs:
-        lines += [f"### {q.qid} · {q.prompt}", "",
-                  f"- key: `{q.path}` · pages: {', '.join(q.pages)} · kind: **{q.kind}**"
-                  + (f" · now: confidence {q.confidence}, source `{q.source}`" if q.kind == "confirm" else "")]
+        lines += [
+            f"### {q.qid} · {q.prompt}",
+            "",
+            f"- key: `{q.path}` · pages: {', '.join(q.pages)} · kind: **{q.kind}**"
+            + (f" · now: confidence {q.confidence}, source `{q.source}`" if q.kind == "confirm" else ""),
+        ]
         if len(q.items) > 1 or q.kind == "confirm":
             lines += [f"  - {it}" for it in q.items]
         lines += ["- answer: ", ""]

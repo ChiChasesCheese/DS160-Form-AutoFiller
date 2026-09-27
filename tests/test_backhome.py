@@ -38,28 +38,31 @@ def _edit(home: Path, rel: str, fn) -> None:
 
 
 # ── validators ──────────────────────────────────────────────────────────
-@pytest.mark.parametrize("name,value,ok", [
-    ("prc_id", "110105199003071239", True),
-    ("prc_id", "110105199003071238", False),       # bad checksum
-    ("prc_id", "11010519900307123", False),        # too short
-    ("cn_passport", "EA1234567", True),
-    ("cn_passport", "E12345678", True),
-    ("cn_passport", "12345678", False),
-    ("us_visa_foil", "A1234567", True),
-    ("uscis_receipt", "IOE0123456789", True),
-    ("uscis_receipt", "IOE012345678", False),
-    ("ssn", "123-45-6789", True),
-    ("ssn", "666-12-3456", False),
-    ("i94", "123456789A1", True),
-    ("us_zip", "95134", True),
-    ("us_zip", "9513", False),
-    ("ceac_name", "MARY-ANN O'NEIL", True),
-    ("ceac_name", "Li", False),                    # CEAC wants upper case
-    ("ceac_address", "100 MAIN ST APT 2", True),
-    ("ceac_address", "X" * 41, False),             # CEAC max 40
-    ("telecode", "2621", True),
-    ("past_date", dt.date(2999, 1, 1), False),
-])
+@pytest.mark.parametrize(
+    "name,value,ok",
+    [
+        ("prc_id", "110105199003071239", True),
+        ("prc_id", "110105199003071238", False),  # bad checksum
+        ("prc_id", "11010519900307123", False),  # too short
+        ("cn_passport", "EA1234567", True),
+        ("cn_passport", "E12345678", True),
+        ("cn_passport", "12345678", False),
+        ("us_visa_foil", "A1234567", True),
+        ("uscis_receipt", "IOE0123456789", True),
+        ("uscis_receipt", "IOE012345678", False),
+        ("ssn", "123-45-6789", True),
+        ("ssn", "666-12-3456", False),
+        ("i94", "123456789A1", True),
+        ("us_zip", "95134", True),
+        ("us_zip", "9513", False),
+        ("ceac_name", "MARY-ANN O'NEIL", True),
+        ("ceac_name", "Li", False),  # CEAC wants upper case
+        ("ceac_address", "100 MAIN ST APT 2", True),
+        ("ceac_address", "X" * 41, False),  # CEAC max 40
+        ("telecode", "2621", True),
+        ("past_date", dt.date(2999, 1, 1), False),
+    ],
+)
 def test_field_validators(name, value, ok):
     assert (run(name, value) is None) is ok
 
@@ -77,14 +80,24 @@ def test_example_profile_is_clean(profile):
 
 
 def test_cross_field_checks_catch_inconsistency(home):
-    _edit(home, "identity.yaml", lambda d: d.__setitem__("date_of_birth", {"value": "1991-03-07", "confidence": "high", "source": "raw/x.pdf"}))
+    _edit(
+        home,
+        "identity.yaml",
+        lambda d: d.__setitem__("date_of_birth", {"value": "1991-03-07", "confidence": "high", "source": "raw/x.pdf"}),
+    )
     errors = [str(i) for i in check_profile(Profile(home / "data/profile")) if i.level == "error"]
-    assert any("embedded birth date" in e for e in errors)   # PRC ID digits disagree
-    assert any("MRZ birth date" in e for e in errors)         # MRZ disagrees
+    assert any("embedded birth date" in e for e in errors)  # PRC ID digits disagree
+    assert any("MRZ birth date" in e for e in errors)  # MRZ disagrees
 
 
 def test_telecode_count_mismatch(home):
-    _edit(home, "identity.yaml", lambda d: d["name"].__setitem__("telecode_given", {"value": "24942494", "confidence": "high", "source": "derived:x"}))
+    _edit(
+        home,
+        "identity.yaml",
+        lambda d: d["name"].__setitem__(
+            "telecode_given", {"value": "24942494", "confidence": "high", "source": "derived:x"}
+        ),
+    )
     assert any("telecode_given" in i.path for i in check_profile(Profile(home / "data/profile")) if i.level == "error")
 
 
@@ -105,7 +118,7 @@ def test_answers_overlay_wins_and_persists(home):
     f = again.get("family.father.surname")
     assert (f.value, f.confidence, f.source) == ("LI", Confidence.USER, "user:2026-09-27")
     again.answer("family.mother", {"given_names": "FANG", "date_of_birth": dt.date(1965, 1, 2)})
-    m = Profile(home / "data/profile").get("family.mother.date_of_birth")   # prefix answer covers children
+    m = Profile(home / "data/profile").get("family.mother.date_of_birth")  # prefix answer covers children
     assert m.value == dt.date(1965, 1, 2) and m.confidence == Confidence.USER
     with pytest.raises(ValueError):
         again.answer("family.father.surname", "LI", source="my memory")  # not a valid source reference
@@ -119,24 +132,26 @@ def test_spec_loads_and_ids_are_unique():
 
 def test_sheet_formats(profile):
     cells = {(c.page, c.id): c for c in forms.build_sheet(forms.load_spec(SPEC), profile)}
-    assert cells[("Personal1", "ddlDOBDay")].expected == "07"          # num2
-    assert cells[("Personal1", "ddlDOBMonth")].expected == "MAR"       # MMM
+    assert cells[("Personal1", "ddlDOBDay")].expected == "07"  # num2
+    assert cells[("Personal1", "ddlDOBMonth")].expected == "MAR"  # MMM
     assert cells[("Personal1", "ddlAPP_POB_CNTRY")].expected == "CHIN"  # mapped select
     assert cells[("Personal1", "rblTelecodeQuestion")].expected == "Y"
-    assert cells[("Personal2", "cbexAPP_SSN_NA")].expected == "1"       # Does Not Apply ticked
+    assert cells[("Personal2", "cbexAPP_SSN_NA")].expected == "1"  # Does Not Apply ticked
     assert cells[("Personal2", "tbxAPP_SSN1")].expected == ""
     assert cells[("PptVisa", "ddlPPT_ISSUED_DTEMonth")].expected == "02"
-    assert cells[("Relatives", "tbxFATHER_SURNAME")].blocking            # unknown stays unknown
+    assert cells[("Relatives", "tbxFATHER_SURNAME")].blocking  # unknown stays unknown
     assert cells[("Relatives", "tbxMOTHER_SURNAME")].expected == "WANG"
 
 
-def test_recon_statuses(profile):
+def test_recon_statuses(profile, home):
     spec = forms.load_spec(SPEC)
     cells = forms.build_sheet(spec, profile)
-    snaps = forms.load_snapshots(EXAMPLE / "applications/DEMO0000001/snapshots")
+    snap = home / "data/applications/DEMO0000001/snapshots/Personal1.tsv"
+    snap.write_text(snap.read_text().replace("BEIJING", "BEIJNG", 1))  # a typo made on the live form
+    snaps = forms.load_snapshots(snap.parent)
     by = {(r.page, r.id): r.status for r in forms.recon(cells, snaps)}
     assert by[("Personal1", "tbxAPP_SURNAME")] == "match"
-    assert by[("Personal1", "tbxAPP_POB_CITY")] == "mismatch"   # BEIJNG typo in the snapshot
+    assert by[("Personal1", "tbxAPP_POB_CITY")] == "mismatch"  # BEIJNG typo in the snapshot
     assert by[("Personal2", "ddlAPP_NATL")] == "not-captured"
     assert by[("Relatives", "tbxFATHER_SURNAME")] == "blocked"
 
@@ -145,9 +160,9 @@ def test_questionnaire_groups_and_orders(profile):
     spec = forms.load_spec(SPEC)
     qs = forms.questionnaire(forms.build_sheet(spec, profile), spec["groups"])
     father = next(q for q in qs if q.path == "family.father")
-    assert father.kind == "missing" and len(father.items) == 4       # 4 inputs -> 1 question
+    assert father.kind == "missing" and len(father.items) == 4  # 4 inputs -> 1 question
     kinds = [q.kind for q in qs]
-    assert kinds == sorted(kinds, key=lambda k: k != "missing")       # missing before confirm
+    assert kinds == sorted(kinds, key=lambda k: k != "missing")  # missing before confirm
     history = next(q for q in qs if q.path == "declarations.history")
     assert history.kind == "missing"  # one unknown member makes the whole group blocking
     assert any("lost a passport" in it and it.endswith(": N") for it in history.items)  # assumed member shown
@@ -169,9 +184,9 @@ def test_ingest_idempotent_and_tamper_evident(tmp_path):
     assert docs.ingest([src], raw)["copied"] == 1
     assert docs.ingest([src], raw)["unchanged"] == 1
     (src / "ID" / "a.txt").write_text("changed upstream")
-    assert docs.ingest([src], raw)["conflict"] == 1          # kept side by side, never overwritten
+    assert docs.ingest([src], raw)["conflict"] == 1  # kept side by side, never overwritten
     (raw / "inbox" / "hukou.txt").write_text("father: LI GANG")
-    assert docs.ingest([], raw)["registered"] == 1           # user drop picked up
+    assert docs.ingest([], raw)["registered"] == 1  # user drop picked up
     assert docs.verify(raw) == []
     (raw / "ID" / "a.txt").write_text("tampered")
     assert docs.verify(raw) == ["modified: ID/a.txt"]
@@ -184,3 +199,41 @@ def test_digest_text(tmp_path):
     index = docs.digest(raw, tmp_path / "digest")
     assert index[0]["status"] == "text"
     assert "WANG FANG" in (tmp_path / "digest" / "inbox" / "note.txt.txt").read_text()
+
+
+# ── photo ───────────────────────────────────────────────────────────────
+def test_photo_crop_geometry_meets_rules():
+    from backhome.photo import EYES_FROM_BOTTOM, HEAD_RANGE, plan_crop
+
+    c = plan_crop(2104, 2275, hair=353, eyes=994, chin=1672)
+    head, eyes = c.ratios(353, 994, 1672)
+    assert c.side <= 2104 and c.top + c.side <= 2275
+    assert HEAD_RANGE[0] <= head <= HEAD_RANGE[1] and EYES_FROM_BOTTOM[0] <= eyes <= EYES_FROM_BOTTOM[1]
+    with pytest.raises(ValueError):
+        plan_crop(500, 500, hair=10, eyes=300, chin=490)  # head fills the frame: cannot reach <= 69%
+
+
+def test_photo_render_and_check(tmp_path):
+    pytest.importorskip("PIL")
+    from PIL import Image
+
+    from backhome.photo import check, plan_crop, render
+
+    src = tmp_path / "in.jpg"
+    Image.new("RGB", (1500, 1800), (240, 240, 236)).save(src)
+    c = plan_crop(1500, 1800, hair=500, eyes=780, chin=1300)
+    info = render(src, c, tmp_path / "out.jpg", size=900)
+    assert info["bytes"] <= 240 * 1024
+    assert check(tmp_path / "out.jpg", 500, 780, 1300, c) == []
+
+
+# ── pipeline + review ───────────────────────────────────────────────────
+def test_pipeline_on_example(home):
+    from backhome.pipeline import run
+
+    stages = {s.name: s for s in run(home, "DEMO0000001", SPEC, pdf=False)}
+    assert stages["raw integrity"].status == "skip"  # no documents in the example
+    assert stages["validate profile"].status in ("ok", "warn")
+    assert stages["recon vs CEAC"].status == "warn"  # unchecked pages + open questions, no mismatch
+    html = (home / "data/applications/DEMO0000001/review.html").read_text()
+    assert "MING LI" in html and "V&lt;USALI&lt;&lt;MING" in html and "<script" not in html

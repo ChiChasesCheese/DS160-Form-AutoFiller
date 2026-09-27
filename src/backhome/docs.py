@@ -93,7 +93,7 @@ def ingest(sources: list[Path], raw: Path) -> dict[str, int]:
 
 
 def _row(rel: Path, digest: str, origin: Path | str, now: str) -> dict:
-    size = (origin.stat().st_size if isinstance(origin, Path) else 0)
+    size = origin.stat().st_size if isinstance(origin, Path) else 0
     return {"path": str(rel), "sha256": digest, "bytes": size, "origin": str(origin), "ingested_at": now}
 
 
@@ -126,9 +126,13 @@ def _ocr(path: Path) -> str | None:
     if not shutil.which("tesseract"):
         return None
     try:
-        out = subprocess.run(["tesseract", str(path), "-", "-l", "eng+chi_sim"], capture_output=True, text=True, timeout=120)
+        out = subprocess.run(
+            ["tesseract", str(path), "-", "-l", "eng+chi_sim"], capture_output=True, text=True, timeout=120
+        )
         if out.returncode != 0:  # chi_sim traineddata may be absent
-            out = subprocess.run(["tesseract", str(path), "-", "-l", "eng"], capture_output=True, text=True, timeout=120)
+            out = subprocess.run(
+                ["tesseract", str(path), "-", "-l", "eng"], capture_output=True, text=True, timeout=120
+            )
         return out.stdout.strip() or None
     except subprocess.TimeoutExpired:
         return None

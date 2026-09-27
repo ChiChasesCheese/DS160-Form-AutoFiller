@@ -5,5 +5,5 @@ Every identifier is fake but *valid* (PRC ID checksum, passport MRZ check digits
 
 ```bash
 BACKHOME_HOME=examples uv run backhome validate
-BACKHOME_HOME=examples uv run backhome recon DEMO0000001   # shows one deliberate mismatch (BEIJNG)
+BACKHOME_HOME=examples uv run backhome recon DEMO0000001   # Personal 1 reconciles; later pages show as unchecked / questions
 ```

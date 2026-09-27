@@ -12,3 +12,5 @@ dist/
 examples/data/applications/*/sheet.tsv
 examples/data/applications/*/recon.tsv
 examples/data/applications/*/questionnaire.yaml
+examples/data/applications/*/review.html
+examples/data/applications/*/review.pdf

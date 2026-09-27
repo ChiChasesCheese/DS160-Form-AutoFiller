@@ -7,8 +7,9 @@ from __future__ import annotations
 
 import datetime as dt
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 from .model import NA, SOURCE_RE, Confidence, Profile
 
@@ -100,11 +101,18 @@ def parse_mrz_line2(line: str) -> dict:
     if len(line) != 44:
         return {"errors": [f"MRZ line 2 must be 44 chars (got {len(line)})"]}
     f = {
-        "number": line[0:9].rstrip("<"), "nationality": line[10:13],
-        "dob": line[13:19], "sex": line[20], "expiry": line[21:27],
+        "number": line[0:9].rstrip("<"),
+        "nationality": line[10:13],
+        "dob": line[13:19],
+        "sex": line[20],
+        "expiry": line[21:27],
     }
     errors = []
-    for name, data, cd in (("number", line[0:9], line[9]), ("dob", line[13:19], line[19]), ("expiry", line[21:27], line[27])):
+    for name, data, cd in (
+        ("number", line[0:9], line[9]),
+        ("dob", line[13:19], line[19]),
+        ("expiry", line[21:27], line[27]),
+    ):
         if mrz_check_digit(data) != cd:
             errors.append(f"MRZ {name} check digit mismatch")
     composite = line[0:10] + line[13:20] + line[21:43]
@@ -176,7 +184,10 @@ def check_profile(p: Profile, today: dt.date | None = None) -> list[Issue]:
             if sex and m["sex"] != sex:
                 err(f"{pp}.mrz", "MRZ sex != identity.sex")
 
-    for part, native in (("surname", p.value("identity.name.native_surname")), ("given", p.value("identity.name.native_given"))):
+    for part, native in (
+        ("surname", p.value("identity.name.native_surname")),
+        ("given", p.value("identity.name.native_given")),
+    ):
         tele = p.value(f"identity.name.telecode_{part}")
         if native and tele:
             n_codes = len(str(tele).replace(" ", "")) // 4
@@ -200,7 +211,10 @@ def check_profile(p: Profile, today: dt.date | None = None) -> list[Issue]:
         if _as_date(a["date"]) > _as_date(b["date"]):
             err("us_immigration.travel_history", f"not sorted at {b['date']}")
         if a["type"] == b["type"]:
-            warn("us_immigration.travel_history", f"two consecutive {a['type']} records ({a['date']}, {b['date']}) — missing record?")
+            warn(
+                "us_immigration.travel_history",
+                f"two consecutive {a['type']} records ({a['date']}, {b['date']}) — missing record?",
+            )
     return issues
 
 
