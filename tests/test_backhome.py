@@ -237,3 +237,54 @@ def test_pipeline_on_example(home):
     assert stages["recon vs CEAC"].status == "warn"  # unchecked pages + open questions, no mismatch
     html = (home / "data/applications/DEMO0000001/review.html").read_text()
     assert "MING LI" in html and "V&lt;USALI&lt;&lt;MING" in html and "<script" not in html
+
+
+# ── CEAC review export + preflight ──────────────────────────────────────
+def test_ceac_review_coverage_detects_drift(profile, tmp_path):
+    from backhome import ceac_review
+
+    spec = forms.load_spec(SPEC)
+    cells = forms.build_sheet(spec, profile)
+    page = tmp_path / "ReviewPersonal.tsv"
+    rows = "\n".join(
+        [
+            "#node=ReviewPersonal",
+            "#title=Non-Immigrant Visa - Review Personal",
+            "## Personal Information",
+            "Name Provided\tLI, MING",
+            "Full Name in Native Alphabet\t李明",
+            "Telecode Name\t2621, 2494",
+            "Sex\tMALE",
+            "Marital Status\tSINGLE",
+            "Date of Birth\t07 MARCH 1990, Edit Address and Phone Information",
+            "Country/Region of Birth\tBEIJING, BEIJING, CHINA",
+            "National Identification Number\t110105199003071239",
+            "## Passport",
+            "Passport/Travel Document Number\tE12345678",
+            "Issuance Date\t15 FEBRUARY 2023",
+            "Expiration Date\t14 FEBRUARY 2033",
+            "City where issued\tBEIJING",
+        ]
+    )
+    page.write_text(rows)
+    pages = ceac_review.load(tmp_path)
+    assert pages["ReviewPersonal"].sections[0][1][-3][1] == "07 MARCH 1990"  # trailing Edit link stripped
+    cov = {c.node: c for c in ceac_review.coverage(pages, cells, {})}["ReviewPersonal"]
+    assert cov.checked > 5 and not [m for m in cov.missing if m[1] in ("Surnames", "Passport Number", "Date of Birth")]
+    page.write_text(rows.replace("E12345678", "E12345679"))  # CEAC holds a different passport number
+    cov = {c.node: c for c in ceac_review.coverage(ceac_review.load(tmp_path), cells, {})}["ReviewPersonal"]
+    assert any(label == "Passport Number" for _, label, _ in cov.missing)
+    assert "CEAC review export" in ceac_review.render(ceac_review.load(tmp_path), [cov], "DEMO")
+
+
+def test_preflight_rules_run_on_example(profile):
+    from backhome import preflight
+
+    spec = forms.load_spec(SPEC)
+    cells = forms.build_sheet(spec, profile)
+    findings = {f.rule: f for f in preflight.run(profile, cells, forms.recon(cells, {}))}
+    assert len([r for r in findings if r.startswith("P")]) == 22
+    assert findings["P02"].status == "pass"  # LI / MING matches the example MRZ
+    assert findings["P11"].status == "pass"
+    assert findings["P22"].status == "fail"  # nothing reconciled against CEAC in the example
+    assert all(f.status in ("pass", "warn", "fail", "manual", "skip") for f in findings.values())

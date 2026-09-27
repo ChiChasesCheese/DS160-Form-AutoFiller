@@ -1,4 +1,4 @@
-"""One command, whole pipeline: raw integrity -> digest -> validate -> sheet -> recon -> review (HTML + PDF).
+"""One command, whole pipeline: raw -> digest -> validate -> sheet -> recon -> preflight -> review (HTML + PDF).
 
 Each stage reports ok / warn / fail; the run stops at the first failing gate that makes later stages
 meaningless (raw tampering, profile errors) and otherwise runs to the end so the reports are always fresh.
@@ -117,7 +117,18 @@ def run(home: Path, app: str, spec_path: Path, *, pdf: bool = True, mask: bool =
         review.to_pdf(out, app_dir / "review.pdf")
         return "ok", f"{out.name} + review.pdf"
 
+    def s_preflight():
+        from . import preflight
+
+        findings = preflight.run(profile_holder["p"], sheet_holder["cells"], sheet_holder["rows"])
+        (app_dir / "PREFLIGHT.md").write_text(preflight.to_markdown(findings, app))
+        n = {k: sum(f.status == k for f in findings) for k in ("pass", "fail", "warn", "manual")}
+        status = "fail" if n["fail"] else "warn" if n["warn"] or n["manual"] else "ok"
+        return status, f"{n['pass']} pass, {n['fail']} fail, {n['warn']} warn, {n['manual']} to eyeball → PREFLIGHT.md"
+
     stage("raw integrity", s_raw) and stage("digest", s_digest)
     if stage("validate profile", s_validate) and stage("build sheet", s_sheet):
-        stage("recon vs CEAC", s_recon) and stage("review document", s_review)
+        if stage("recon vs CEAC", s_recon):
+            stage("preflight checks", s_preflight)
+            stage("review document", s_review)
     return stages

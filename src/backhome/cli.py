@@ -182,6 +182,40 @@ def cmd_photo(a) -> int:
     return 1 if problems else 0
 
 
+def cmd_ceac_review(a) -> int:
+    import base64
+
+    from . import ceac_review, review
+
+    spec, cells, app_dir = _sheet(a.app)
+    pages = ceac_review.load(app_dir / "ceac_review")
+    if not pages:
+        sys.exit(f"no captured pages in {app_dir / 'ceac_review'} — run skills/ds160-review-export first")
+    cov = ceac_review.coverage(pages, cells, forms.load_snapshots(app_dir / "snapshots"))
+    photo = app_dir.parent.parent / "photo" / "ds160.jpg"
+    b64 = base64.b64encode(photo.read_bytes()).decode() if photo.exists() else None
+    out = app_dir / "ceac_review.html"
+    out.write_text(ceac_review.render(pages, cov, a.app, b64))
+    for c in cov:
+        print(f" {'✓' if not c.missing else '✗'} {c.node:<22} {c.checked - len(c.missing)}/{c.checked} answers found")
+        for page, label, val in c.missing[:10]:
+            print(f"     missing {page}: {label} = {val}")
+    todo = [n for n in ceac_review.REVIEW_PAGES if n not in pages]
+    if todo:
+        print(f" · not captured yet: {', '.join(todo)}")
+    if not a.html_only:
+        review.to_pdf(out, app_dir / "ceac_review.pdf")
+        print(f"-> {app_dir / 'ceac_review.pdf'}")
+    return 1 if any(c.missing for c in cov) or todo else 0
+
+
+def cmd_receive(a) -> int:
+    from .receiver import serve
+
+    serve(Path(a.out), a.port)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(
         prog="backhome", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -227,6 +261,14 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--face-x", type=float, help="x pixel of the face centre (default: image centre)")
     s.add_argument("--size", type=int, default=1200)
     s.set_defaults(fn=cmd_photo)
+    s = sub.add_parser("ceac-review", help="captured CEAC Review pages -> ceac_review.pdf + coverage recon")
+    s.add_argument("app")
+    s.add_argument("--html-only", action="store_true")
+    s.set_defaults(fn=cmd_ceac_review)  # noqa: E702
+    s = sub.add_parser("receive", help="loopback receiver for large in-page payloads (CEAC review export)")
+    s.add_argument("--out", required=True)
+    s.add_argument("--port", type=int, default=47631)
+    s.set_defaults(fn=cmd_receive)
     a = ap.parse_args(argv)
     return a.fn(a)
 
